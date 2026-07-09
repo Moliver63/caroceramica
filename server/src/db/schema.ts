@@ -1,0 +1,202 @@
+import {
+  pgTable,
+  serial,
+  text,
+  varchar,
+  integer,
+  numeric,
+  boolean,
+  timestamp,
+  jsonb,
+  pgEnum,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+
+// ──────────────────────────────────────────────────────────
+// ENUMS
+// ──────────────────────────────────────────────────────────
+
+export const categoriaEnum = pgEnum("categoria", ["consultorio", "casa"]);
+
+export const statusArteEnum = pgEnum("status_arte", [
+  "nao_aplicavel", // produto não personalizável
+  "aguardando_upload",
+  "em_analise",
+  "aprovada",
+  "reprovada",
+]);
+
+export const statusPedidoEnum = pgEnum("status_pedido", [
+  "aguardando_pagamento",
+  "pago",
+  "em_producao",
+  "pronto_envio",
+  "enviado",
+  "entregue",
+  "cancelado",
+]);
+
+export const gatewayEnum = pgEnum("gateway_pagamento", ["asaas", "stripe"]);
+
+export const metodoPagamentoEnum = pgEnum("metodo_pagamento", [
+  "pix",
+  "boleto",
+  "cartao_credito",
+]);
+
+// ──────────────────────────────────────────────────────────
+// PRODUTOS
+// ──────────────────────────────────────────────────────────
+
+export const produtos = pgTable("produtos", {
+  id: serial("id").primaryKey(),
+  nome: varchar("nome", { length: 160 }).notNull(),
+  slug: varchar("slug", { length: 180 }).notNull().unique(),
+  categoria: categoriaEnum("categoria").notNull(),
+  descricao: text("descricao"),
+
+  precoBase: numeric("preco_base", { precision: 10, scale: 2 }).notNull(),
+
+  // Personalização (carimbo exclusivo, gravação, etc.)
+  personalizavel: boolean("personalizavel").notNull().default(false),
+  custoPersonalizacao: numeric("custo_personalizacao", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+
+  // Kit (ex: prato oval + amassadinho P)
+  ehKit: boolean("eh_kit").notNull().default(false),
+
+  // Produção artesanal
+  prazoProducaoDias: integer("prazo_producao_dias").notNull().default(30),
+  observacaoArtesanal: text("observacao_artesanal").default(
+    "Peça feita à mão. Pequenas variações de forma, textura e tonalidade fazem parte do processo artesanal."
+  ),
+
+  imagens: jsonb("imagens").$type<string[]>().default([]),
+  ativo: boolean("ativo").notNull().default(true),
+
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+  atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
+});
+
+// Variantes de cor de um produto (ex: Azul SC076, Verde SC091, Dourado SC092)
+export const variantesCor = pgTable("variantes_cor", {
+  id: serial("id").primaryKey(),
+  produtoId: integer("produto_id")
+    .notNull()
+    .references(() => produtos.id, { onDelete: "cascade" }),
+  nome: varchar("nome", { length: 80 }).notNull(), // ex: "Cinza Urbano"
+  codigoHex: varchar("codigo_hex", { length: 7 }), // ex: "#B08D6E"
+  codigoFornecedor: varchar("codigo_fornecedor", { length: 40 }), // ex: "SC076"
+  imagemUrl: text("imagem_url"),
+  estoqueDisponivel: boolean("estoque_disponivel").notNull().default(true),
+});
+
+// Itens que compõem um kit (auto-relação produto -> produto)
+export const itensKit = pgTable("itens_kit", {
+  id: serial("id").primaryKey(),
+  kitId: integer("kit_id")
+    .notNull()
+    .references(() => produtos.id, { onDelete: "cascade" }),
+  produtoId: integer("produto_id")
+    .notNull()
+    .references(() => produtos.id, { onDelete: "cascade" }),
+  quantidade: integer("quantidade").notNull().default(1),
+});
+
+export const produtosRelations = relations(produtos, ({ many }) => ({
+  variantesCor: many(variantesCor),
+  itensDoKit: many(itensKit, { relationName: "kit" }),
+}));
+
+export const variantesCorRelations = relations(variantesCor, ({ one }) => ({
+  produto: one(produtos, {
+    fields: [variantesCor.produtoId],
+    references: [produtos.id],
+  }),
+}));
+
+// ──────────────────────────────────────────────────────────
+// PEDIDOS
+// ──────────────────────────────────────────────────────────
+
+export const pedidos = pgTable("pedidos", {
+  id: serial("id").primaryKey(),
+  codigoPedido: varchar("codigo_pedido", { length: 20 }).notNull().unique(), // ex: CC-2026-0042
+
+  clienteNome: varchar("cliente_nome", { length: 160 }).notNull(),
+  clienteEmail: varchar("cliente_email", { length: 160 }).notNull(),
+  clienteTelefone: varchar("cliente_telefone", { length: 30 }),
+  clienteDocumento: varchar("cliente_documento", { length: 20 }), // CPF/CNPJ (Asaas exige)
+
+  enderecoEntrega: jsonb("endereco_entrega").$type<{
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    pais: string; // "BR" ou outro, para decidir Asaas x Stripe
+  }>(),
+
+  status: statusPedidoEnum("status").notNull().default("aguardando_pagamento"),
+
+  gateway: gatewayEnum("gateway").notNull(), // asaas (padrão) | stripe (fase 2)
+  metodoPagamento: metodoPagamentoEnum("metodo_pagamento"),
+  gatewayReferenciaId: varchar("gateway_referencia_id", { length: 120 }), // id da cobrança no provedor
+
+  subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
+  custoPersonalizacaoTotal: numeric("custo_personalizacao_total", {
+    precision: 10,
+    scale: 2,
+  }).default("0"),
+  frete: numeric("frete", { precision: 10, scale: 2 }).default("0"),
+  total: numeric("total", { precision: 10, scale: 2 }).notNull(),
+
+  prazoProducaoEstimado: timestamp("prazo_producao_estimado"),
+
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+  atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
+});
+
+export const itensPedido = pgTable("itens_pedido", {
+  id: serial("id").primaryKey(),
+  pedidoId: integer("pedido_id")
+    .notNull()
+    .references(() => pedidos.id, { onDelete: "cascade" }),
+  produtoId: integer("produto_id")
+    .notNull()
+    .references(() => produtos.id),
+  varianteCorId: integer("variante_cor_id").references(() => variantesCor.id),
+
+  quantidade: integer("quantidade").notNull().default(1),
+  precoUnitario: numeric("preco_unitario", { precision: 10, scale: 2 }).notNull(),
+
+  // Personalização deste item específico (carimbo)
+  personalizado: boolean("personalizado").notNull().default(false),
+  arteCarimboUrl: text("arte_carimbo_url"),
+  statusArte: statusArteEnum("status_arte").notNull().default("nao_aplicavel"),
+  textoCarimbo: varchar("texto_carimbo", { length: 60 }),
+  observacoesCliente: text("observacoes_cliente"),
+});
+
+export const pedidosRelations = relations(pedidos, ({ many }) => ({
+  itens: many(itensPedido),
+}));
+
+export const itensPedidoRelations = relations(itensPedido, ({ one }) => ({
+  pedido: one(pedidos, {
+    fields: [itensPedido.pedidoId],
+    references: [pedidos.id],
+  }),
+  produto: one(produtos, {
+    fields: [itensPedido.produtoId],
+    references: [produtos.id],
+  }),
+  varianteCor: one(variantesCor, {
+    fields: [itensPedido.varianteCorId],
+    references: [variantesCor.id],
+  }),
+}));

@@ -1,0 +1,16 @@
+{
+  "name": "caro-ceramica",
+  "private": true,
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "dev:client": "npm run dev --workspace=client",
+    "dev:server": "npm run dev --workspace=server",
+    "db:generate": "npm run db:generate --workspace=server",
+    "db:migrate": "npm run db:migrate --workspace=server",
+    "seed": "npm run seed --workspace=server"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "drizzle-kit": "^0.24.0"
+  }
+}

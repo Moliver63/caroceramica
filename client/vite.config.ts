@@ -11,6 +11,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    host: true,
+    // Permite acessar o dev server via hosts externos (ex: preview em sandbox/tunnel).
+    allowedHosts: true,
     proxy: {
       // Encaminha chamadas de API pro Express em dev, evita CORS local
       "/api": {

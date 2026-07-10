@@ -1,6 +1,11 @@
-import type { Produto, PedidoCriadoResponse } from "./types";
+﻿import type { Produto, PedidoCriadoResponse } from "./types";
 
-const API_BASE = "/api";
+// Em dev, o vite.config.ts faz proxy de /api pra localhost:4000.
+// Em producao, client e server ficam em dominios .onrender.com diferentes,
+// entao a URL completa da API precisa vir de uma env var do Vite.
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+  : "/api";
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

@@ -1,11 +1,7 @@
-import type { Config } from "drizzle-kit";
+﻿import type { Config } from "drizzle-kit";
 import { config } from "dotenv";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// drizzle-kit é um processo CLI separado do app — precisa carregar o .env aqui também
 config({ path: path.resolve(__dirname, ".env") });
 
 if (!process.env.DATABASE_URL) {

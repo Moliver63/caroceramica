@@ -96,7 +96,7 @@ checkoutRouter.post("/", async (req, res) => {
       arteCarimboUrl: item.arteCarimboUrl,
       textoCarimbo: item.textoCarimbo,
       observacoesCliente: item.observacoesCliente,
-      statusArte: item.personalizado ? "aguardando_upload" : "nao_aplicavel",
+      statusArte: item.personalizado ? ("aguardando_upload" as const) : ("nao_aplicavel" as const),
     }))
   );
 

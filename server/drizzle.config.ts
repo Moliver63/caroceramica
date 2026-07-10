@@ -1,4 +1,4 @@
-﻿import type { Config } from "drizzle-kit";
+import type { Config } from "drizzle-kit";
 import { config } from "dotenv";
 import path from "path";
 

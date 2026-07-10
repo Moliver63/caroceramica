@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useCarrinho } from "../lib/carrinho-context";
-import { api } from "../lib/api";
+import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -28,15 +28,15 @@ export default function Checkout() {
     pais: "BR",
   });
 
-  const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const criarPedido = trpc.checkout.criarPedido.useMutation();
+  const enviando = criarPedido.isPending;
 
   async function finalizarPedido() {
-    setEnviando(true);
     setErro(null);
 
     try {
-      const resposta = await api.criarPedido({
+      const resposta = await criarPedido.mutateAsync({
         cliente: { nome, email, telefone, documento },
         enderecoEntrega: endereco,
         itens: itens.map((i) => ({
@@ -53,12 +53,16 @@ export default function Checkout() {
         metodoPagamento,
       });
 
+      if (!resposta.sucesso) {
+        // Pedido foi registrado, mas a cobrança falhou — ainda assim leva
+        // pro estado "aguardando pagamento" pra equipe entrar em contato.
+        setErro(resposta.erro);
+      }
+
       limparCarrinho();
       navegar(`/pedido/${resposta.codigoPedido}`);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro ao finalizar pedido");
-    } finally {
-      setEnviando(false);
     }
   }
 

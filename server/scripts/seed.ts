@@ -1,6 +1,6 @@
-import "../env";
-import { db } from "./index";
-import { produtos, variantesCor, itensKit } from "./schema";
+import "dotenv/config";
+import { db } from "../db";
+import { produtos, variantesCor, itensKit } from "../../shared/schema";
 
 async function seed() {
   console.log("Populando catálogo Caro Cerâmica...");

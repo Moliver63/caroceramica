@@ -1,4 +1,4 @@
-﻿import type { Produto, PedidoCriadoResponse } from "./types";
+import type { Produto, PedidoCriadoResponse } from "./types";
 
 // Em dev, o vite.config.ts faz proxy de /api pra localhost:4000.
 // Em producao, client e server ficam em dominios .onrender.com diferentes,

@@ -117,6 +117,18 @@ export const variantesCorRelations = relations(variantesCor, ({ one }) => ({
   }),
 }));
 
+export const itensKitRelations = relations(itensKit, ({ one }) => ({
+  kit: one(produtos, {
+    fields: [itensKit.kitId],
+    references: [produtos.id],
+    relationName: "kit",
+  }),
+  produto: one(produtos, {
+    fields: [itensKit.produtoId],
+    references: [produtos.id],
+  }),
+}));
+
 // ──────────────────────────────────────────────────────────
 // PEDIDOS
 // ──────────────────────────────────────────────────────────

@@ -24,3 +24,4 @@ yarn-error.log*
 Thumbs.db
 
 .vite/
+client/tsconfig.tsbuildinfo

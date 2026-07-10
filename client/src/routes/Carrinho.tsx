@@ -13,10 +13,8 @@ export default function Carrinho() {
         <Header />
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
           <p className="text-marrom">Seu carrinho está vazio.</p>
-          <Link href="/">
-            <a className="mt-4 inline-block text-terracota underline">
-              Voltar para o catálogo
-            </a>
+          <Link href="/" className="mt-4 inline-block text-terracota underline">
+            Voltar para o catálogo
           </Link>
         </div>
         <Footer />

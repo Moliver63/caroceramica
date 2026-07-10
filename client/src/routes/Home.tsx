@@ -28,15 +28,17 @@ export default function Home() {
         </p>
 
         <div className="mt-8 flex justify-center gap-4">
-          <Link href="/catalogo/consultorio">
-            <a className="rounded-lg bg-marrom-escuro px-6 py-3 text-white hover:bg-[#3a2e26]">
-              Para consultório
-            </a>
+          <Link
+            href="/catalogo/consultorio"
+            className="rounded-lg bg-marrom-escuro px-6 py-3 text-white hover:bg-[#3a2e26]"
+          >
+            Para consultório
           </Link>
-          <Link href="/catalogo/casa">
-            <a className="rounded-lg border border-marrom-escuro px-6 py-3 text-marrom-escuro hover:bg-borda/20">
-              Para casa
-            </a>
+          <Link
+            href="/catalogo/casa"
+            className="rounded-lg border border-marrom-escuro px-6 py-3 text-marrom-escuro hover:bg-borda/20"
+          >
+            Para casa
           </Link>
         </div>
       </section>

@@ -1,13 +1,7 @@
-import { useEffect, useState } from "react";
-import { api } from "../../lib/api";
-import type { Produto } from "../../lib/types";
+import { trpc } from "../../lib/trpc";
 
 export default function AdminProdutos() {
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-
-  useEffect(() => {
-    api.listarProdutos().then(setProdutos);
-  }, []);
+  const { data: produtos = [] } = trpc.produtos.listar.useQuery();
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">

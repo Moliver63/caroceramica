@@ -1,23 +1,14 @@
 import { useParams } from "wouter";
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { Produto } from "../lib/types";
+import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
 
 export default function Catalogo() {
   const { categoria } = useParams<{ categoria: "consultorio" | "casa" }>();
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [carregando, setCarregando] = useState(true);
-
-  useEffect(() => {
-    setCarregando(true);
-    api.listarProdutos(categoria).then((lista) => {
-      setProdutos(lista);
-      setCarregando(false);
-    });
-  }, [categoria]);
+  const { data: produtos = [], isLoading: carregando } = trpc.produtos.listar.useQuery({
+    categoria,
+  });
 
   const titulo = categoria === "consultorio" ? "Para consultório" : "Para casa";
 

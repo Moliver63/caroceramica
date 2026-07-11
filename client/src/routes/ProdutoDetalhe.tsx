@@ -1,8 +1,8 @@
 import { useParams } from "wouter";
 import { useEffect, useState } from "react";
-import type { Produto, VarianteCor } from "../lib/types";
+import type { VarianteCor } from "../lib/types";
 import { useCarrinho } from "../lib/carrinho-context";
-import { api } from "../lib/api";
+import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -10,18 +10,17 @@ export default function ProdutoDetalhe() {
   const { slug } = useParams();
   const { adicionarItem } = useCarrinho();
 
-  const [produto, setProduto] = useState<Produto | null>(null);
+  const { data: produto } = trpc.produtos.buscarPorSlug.useQuery(
+    { slug: slug ?? "" },
+    { enabled: !!slug }
+  );
   const [corSelecionada, setCorSelecionada] = useState<VarianteCor | null>(null);
   const [arteCarimbo, setArteCarimbo] = useState<File | null>(null);
   const [textoCarimbo, setTextoCarimbo] = useState("");
 
   useEffect(() => {
-    if (!slug) return;
-    api.buscarProduto(slug).then((data) => {
-      setProduto(data);
-      setCorSelecionada(data.variantesCor[0] ?? null);
-    });
-  }, [slug]);
+    if (produto) setCorSelecionada(produto.variantesCor[0] ?? null);
+  }, [produto]);
 
   if (!produto)
     return (
@@ -66,7 +65,7 @@ export default function ProdutoDetalhe() {
       <div className="mx-auto max-w-5xl px-6 py-10 grid md:grid-cols-2 gap-10">
       <div>
         <img
-          src={produto.imagens[0]}
+          src={produto.imagens?.[0]}
           alt={produto.nome}
           className="w-full rounded-xl object-cover"
         />

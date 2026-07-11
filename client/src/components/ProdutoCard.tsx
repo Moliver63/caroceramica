@@ -5,7 +5,7 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
   return (
     <Link href={`/produto/${produto.slug}`} className="group block">
       <div className="aspect-square overflow-hidden rounded-xl bg-borda/30">
-        {produto.imagens[0] && (
+        {produto.imagens?.[0] && (
           <img
             src={produto.imagens[0]}
             alt={produto.nome}

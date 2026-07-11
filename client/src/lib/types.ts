@@ -1,5 +1,15 @@
-// Tipos compartilhados de domínio — espelham o schema do Drizzle,
-// mas ficam desacoplados para uso livre no client (forms, carrinho, etc.)
+// Tipos compartilhados de domínio. Produto/VarianteCor vêm direto do
+// AppRouter (inferRouterOutputs) — única fonte de verdade, sem risco de
+// dessincronizar do schema real do banco. Os demais são tipos de estado
+// local (carrinho, formulário de checkout).
+
+import type { inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "../../../server/routers";
+
+type RouterOutputs = inferRouterOutputs<AppRouter>;
+
+export type Produto = RouterOutputs["produtos"]["listar"][number];
+export type VarianteCor = Produto["variantesCor"][number];
 
 export type Categoria = "consultorio" | "casa";
 
@@ -21,38 +31,6 @@ export type StatusPedido =
 
 export type GatewayPagamento = "asaas" | "stripe";
 export type MetodoPagamento = "pix" | "boleto" | "cartao_credito";
-
-export interface VarianteCor {
-  id: number;
-  nome: string;
-  codigoHex: string | null;
-  codigoFornecedor: string | null;
-  imagemUrl: string | null;
-  estoqueDisponivel: boolean;
-}
-
-export interface Produto {
-  id: number;
-  nome: string;
-  slug: string;
-  categoria: Categoria;
-  descricao: string | null;
-
-  precoBase: string; // numeric vem como string do Postgres/Drizzle
-
-  personalizavel: boolean;
-  custoPersonalizacao: string;
-
-  ehKit: boolean;
-  itensDoKit?: Array<{ produto: Produto; quantidade: number }>;
-
-  prazoProducaoDias: number;
-  observacaoArtesanal: string | null;
-
-  imagens: string[];
-  variantesCor: VarianteCor[];
-  ativo: boolean;
-}
 
 // Item do carrinho — estado local, ainda não é pedido
 export interface ItemCarrinho {

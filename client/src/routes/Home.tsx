@@ -1,17 +1,12 @@
 import { Link } from "wouter";
-import { useEffect, useState } from "react";
-import { api } from "../lib/api";
-import type { Produto } from "../lib/types";
+import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
 
 export default function Home() {
-  const [destaques, setDestaques] = useState<Produto[]>([]);
-
-  useEffect(() => {
-    api.listarProdutos().then((lista) => setDestaques(lista.slice(0, 4)));
-  }, []);
+  const { data: lista } = trpc.produtos.listar.useQuery();
+  const destaques = (lista ?? []).slice(0, 4);
 
   return (
     <div>

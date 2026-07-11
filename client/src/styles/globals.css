@@ -9,3 +9,25 @@ body {
 h1, h2, h3, .font-serif {
   font-family: "Playfair Display", serif;
 }
+
+/* Rótulo pequeno em versalete, usado como "eyebrow" acima de títulos —
+   referência às etiquetas de peça em ateliês de cerâmica. */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Divisor orgânico entre o hero e o resto da página — evoca o lábio
+   irregular de uma peça feita à mão no torno, em vez de uma linha reta.
+   É o elemento de assinatura da página; usado uma única vez. */
+.borda-torneada {
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 78%,
+    93% 84%, 86% 79%, 79% 88%, 72% 81%,
+    65% 90%, 58% 82%, 51% 92%, 44% 83%,
+    37% 90%, 30% 80%, 23% 89%, 16% 81%,
+    9% 87%, 4% 79%, 0% 85%
+  );
+}

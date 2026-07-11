@@ -14,7 +14,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { produtos, itensKit } from "../../shared/schema";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
 const categoriaSchema = z.enum(["consultorio", "casa"]);
 
@@ -61,7 +61,7 @@ export const produtosRouter = router({
     }),
 
   // ── Criar produto (admin) ────────────────────────────────────
-  criar: publicProcedure
+  criar: adminProcedure
     .input(
       z.object({
         nome: z.string().min(1),
@@ -92,7 +92,7 @@ export const produtosRouter = router({
     }),
 
   // ── Atualizar produto (admin) ────────────────────────────────
-  atualizar: publicProcedure
+  atualizar: adminProcedure
     .input(
       z.object({
         id: z.number().int(),

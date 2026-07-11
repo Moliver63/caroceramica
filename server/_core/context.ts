@@ -1,19 +1,20 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import { COOKIE_NOME, tokenSessaoValido } from "./admin-session";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
   res: CreateExpressContextOptions["res"];
-  // TODO: quando o painel admin tiver login, popular isto a partir da sessão
-  // (mesmo padrão do shadiahasan: server/_core/sdk.ts + auth/passport.ts).
-  user: null;
+  isAdmin: boolean;
 };
 
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
+  const token = opts.req.cookies?.[COOKIE_NOME];
+
   return {
     req: opts.req,
     res: opts.res,
-    user: null,
+    isAdmin: tokenSessaoValido(token),
   };
 }

@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "../routers";
@@ -17,7 +18,8 @@ async function startServer() {
     app.set("trust proxy", 1);
   }
 
-  app.use(cors());
+  app.use(cors({ credentials: true, origin: true }));
+  app.use(cookieParser());
   app.use(express.json());
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));

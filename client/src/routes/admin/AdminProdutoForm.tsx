@@ -67,7 +67,7 @@ function Formulario() {
     setImagens(produtoExistente.imagens ?? []);
   }, [produtoExistente]);
 
-  const gerarUpload = trpc.admin.gerarUploadCloudflare.useMutation();
+  const gerarAssinatura = trpc.admin.gerarAssinaturaUpload.useMutation();
   const criar = trpc.produtos.criar.useMutation();
   const atualizar = trpc.produtos.atualizar.useMutation();
   const salvando = criar.isPending || atualizar.isPending;
@@ -81,20 +81,27 @@ function Formulario() {
     setErro(null);
     setEnviandoImagem(true);
     try {
-      const { uploadURL } = await gerarUpload.mutateAsync();
+      const { timestamp, assinatura, folder, apiKey, cloudName } =
+        await gerarAssinatura.mutateAsync();
 
       const formData = new FormData();
       formData.append("file", arquivo);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", String(timestamp));
+      formData.append("signature", assinatura);
+      formData.append("folder", folder);
 
-      const resposta = await fetch(uploadURL, { method: "POST", body: formData });
+      const resposta = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: "POST", body: formData }
+      );
       const dados = await resposta.json();
 
-      if (!resposta.ok || !dados.success) {
-        throw new Error(dados?.errors?.[0]?.message ?? "Falha no upload da imagem.");
+      if (!resposta.ok) {
+        throw new Error(dados?.error?.message ?? "Falha no upload da imagem.");
       }
 
-      const urlImagem = dados.result.variants[0] as string;
-      setImagens((atual) => [...atual, urlImagem]);
+      setImagens((atual) => [...atual, dados.secure_url as string]);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Falha no upload da imagem.");
     } finally {

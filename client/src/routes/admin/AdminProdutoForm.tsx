@@ -48,6 +48,9 @@ function Formulario() {
   const [ativo, setAtivo] = useState(produtoExistente?.ativo ?? true);
   const [imagens, setImagens] = useState<string[]>(produtoExistente?.imagens ?? []);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
+  const [progressoUpload, setProgressoUpload] = useState<{ atual: number; total: number } | null>(
+    null
+  );
   const [erro, setErro] = useState<string | null>(null);
 
   // produtoExistente chega de forma assíncrona (query) — popula o form
@@ -71,6 +74,33 @@ function Formulario() {
   const criar = trpc.produtos.criar.useMutation();
   const atualizar = trpc.produtos.atualizar.useMutation();
   const salvando = criar.isPending || atualizar.isPending;
+
+  async function handleUploadImagens(arquivos: FileList) {
+    const lista = Array.from(arquivos);
+    const vagas = LIMITE_IMAGENS - imagens.length;
+
+    if (vagas <= 0) {
+      setErro(`Limite de ${LIMITE_IMAGENS} imagens por peça atingido.`);
+      return;
+    }
+
+    const paraEnviar = lista.slice(0, vagas);
+    if (lista.length > vagas) {
+      setErro(
+        `Só cabem mais ${vagas} imagem(ns) (limite de ${LIMITE_IMAGENS}). As demais foram ignoradas.`
+      );
+    } else {
+      setErro(null);
+    }
+
+    // Envia uma de cada vez (em série), pra manter a ordem e não estourar
+    // limite de requisições simultâneas no Cloudinary.
+    for (let i = 0; i < paraEnviar.length; i++) {
+      setProgressoUpload({ atual: i + 1, total: paraEnviar.length });
+      await handleUploadImagem(paraEnviar[i]);
+    }
+    setProgressoUpload(null);
+  }
 
   async function handleUploadImagem(arquivo: File) {
     if (imagens.length >= LIMITE_IMAGENS) {
@@ -279,16 +309,19 @@ function Formulario() {
             ))}
 
             {imagens.length < LIMITE_IMAGENS && (
-            <label className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-borda text-xs text-marrom hover:border-terracota">
-              {enviandoImagem ? "Enviando…" : "+ Imagem"}
+            <label className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-borda text-center text-xs text-marrom hover:border-terracota">
+              {progressoUpload
+                ? `Enviando ${progressoUpload.atual}/${progressoUpload.total}…`
+                : "+ Imagens"}
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
                 disabled={enviandoImagem}
                 onChange={(e) => {
-                  const arquivo = e.target.files?.[0];
-                  if (arquivo) handleUploadImagem(arquivo);
+                  const arquivos = e.target.files;
+                  if (arquivos && arquivos.length > 0) handleUploadImagens(arquivos);
                   e.target.value = "";
                 }}
               />

@@ -93,6 +93,9 @@ export const adminRouter = router({
 
     let dados: { success?: boolean; result?: { uploadURL: string; id: string } };
     try {
+      const corpo = new FormData();
+      corpo.append("requireSignedURLs", "false");
+
       const resposta = await fetch(
         `https://api.cloudflare.com/client/v4/accounts/${ENV.cloudflareAccountId}/images/v2/direct_upload`,
         {
@@ -100,7 +103,7 @@ export const adminRouter = router({
           headers: {
             Authorization: `Bearer ${ENV.cloudflareApiToken}`,
           },
-          body: new URLSearchParams({ requireSignedURLs: "false" }),
+          body: corpo,
         }
       );
       dados = await resposta.json();

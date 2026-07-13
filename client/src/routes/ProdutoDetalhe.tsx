@@ -5,6 +5,7 @@ import { useCarrinho } from "../lib/carrinho-context";
 import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import CarrosselImagens from "../components/CarrosselImagens";
 
 export default function ProdutoDetalhe() {
   const { slug } = useParams();
@@ -62,82 +63,79 @@ export default function ProdutoDetalhe() {
   return (
     <div>
       <Header />
-      <div className="mx-auto max-w-5xl px-6 py-10 grid md:grid-cols-2 gap-10">
-      <div>
-        <img
-          src={produto.imagens?.[0]}
-          alt={produto.nome}
-          className="w-full rounded-xl object-cover"
-        />
-      </div>
+      <div className="mx-auto grid max-w-5xl gap-10 px-6 py-10 md:grid-cols-2">
+        <CarrosselImagens imagens={produto.imagens ?? []} nomeProduto={produto.nome} />
 
-      <div>
-        <h1 className="font-serif text-3xl text-[#4A3B31]">{produto.nome}</h1>
-        <p className="mt-2 text-[#8C7A6B]">{produto.descricao}</p>
+        <div>
+          <p className="eyebrow text-marrom/60">
+            {produto.categoria === "consultorio" ? "Consultório" : "Casa"}
+          </p>
+          <h1 className="mt-1 font-serif text-3xl text-marrom-escuro">{produto.nome}</h1>
+          <p className="mt-2 text-marrom">{produto.descricao}</p>
 
-        <p className="mt-4 text-2xl text-[#B08D6E]">
-          R$ {precoFinal.toFixed(2).replace(".", ",")}
-        </p>
+          <p className="mt-4 text-2xl text-terracota">
+            R$ {precoFinal.toFixed(2).replace(".", ",")}
+          </p>
 
-        {produto.variantesCor.length > 0 && (
-          <div className="mt-6">
-            <p className="text-sm font-medium mb-2">Cor</p>
-            <div className="flex gap-3">
-              {produto.variantesCor.map((cor) => (
-                <button
-                  key={cor.id}
-                  onClick={() => setCorSelecionada(cor)}
-                  className={`h-9 w-9 rounded-full border-2 ${
-                    corSelecionada?.id === cor.id
-                      ? "border-[#4A3B31]"
-                      : "border-transparent"
-                  }`}
-                  style={{ backgroundColor: cor.codigoHex ?? "#ccc" }}
-                  title={cor.nome}
-                />
-              ))}
+          {produto.variantesCor.length > 0 && (
+            <div className="mt-6">
+              <p className="mb-2 text-sm font-medium text-marrom-escuro">Cor</p>
+              <div className="flex gap-3">
+                {produto.variantesCor.map((cor) => (
+                  <button
+                    key={cor.id}
+                    onClick={() => setCorSelecionada(cor)}
+                    className={`h-9 w-9 rounded-full border-2 ${
+                      corSelecionada?.id === cor.id
+                        ? "border-marrom-escuro"
+                        : "border-transparent"
+                    }`}
+                    style={{ backgroundColor: cor.codigoHex ?? "#ccc" }}
+                    title={cor.nome}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {produto.personalizavel && (
-          <div className="mt-6 space-y-3 rounded-lg border border-[#E4D9CC] p-4">
-            <p className="text-sm font-medium">
-              Personalização com carimbo exclusivo (+R${" "}
-              {Number(produto.custoPersonalizacao).toFixed(2).replace(".", ",")})
-            </p>
-            <input
-              type="text"
-              placeholder="Texto ou iniciais para o carimbo"
-              value={textoCarimbo}
-              onChange={(e) => setTextoCarimbo(e.target.value)}
-              className="w-full rounded border border-[#E4D9CC] px-3 py-2 text-sm"
-            />
-            <input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => setArteCarimbo(e.target.files?.[0] ?? null)}
-              className="text-sm"
-            />
-            <p className="text-xs text-[#8C7A6B]">
-              Envie sua arte/logo, ou deixe em branco para receber uma prova por
-              e-mail antes da produção.
-            </p>
-          </div>
-        )}
+          {produto.personalizavel && (
+            <div className="mt-6 space-y-3 rounded-lg border border-borda p-4">
+              <p className="text-sm font-medium text-marrom-escuro">
+                Personalização com carimbo exclusivo (+R${" "}
+                {Number(produto.custoPersonalizacao).toFixed(2).replace(".", ",")})
+              </p>
+              <input
+                type="text"
+                placeholder="Texto ou iniciais para o carimbo"
+                value={textoCarimbo}
+                onChange={(e) => setTextoCarimbo(e.target.value)}
+                className="w-full rounded border border-borda px-3 py-2 text-sm text-marrom-escuro"
+              />
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => setArteCarimbo(e.target.files?.[0] ?? null)}
+                className="text-sm text-marrom"
+              />
+              <p className="text-xs text-marrom">
+                Envie sua arte/logo, ou deixe em branco para receber uma prova por
+                e-mail antes da produção.
+              </p>
+            </div>
+          )}
 
-        <p className="mt-6 text-sm text-[#8C7A6B]">
-          {produto.observacaoArtesanal} Prazo de produção: {produto.prazoProducaoDias}{" "}
-          dias.
-        </p>
+          <p className="mt-6 text-sm text-marrom">
+            {produto.observacaoArtesanal} Prazo de produção: {produto.prazoProducaoDias}{" "}
+            dias.
+          </p>
 
-        <button
-          onClick={handleAdicionarAoCarrinho}
-          className="mt-6 w-full rounded-lg bg-[#4A3B31] py-3 text-white hover:bg-[#3a2e26] transition"
-        >
-          Adicionar ao carrinho
-        </button>
-      </div>
+          <button
+            onClick={handleAdicionarAoCarrinho}
+            className="mt-6 w-full rounded-full bg-marrom-escuro py-3 text-white transition hover:bg-[#3a2e26]"
+          >
+            Adicionar ao carrinho
+          </button>
+        </div>
       </div>
       <Footer />
     </div>

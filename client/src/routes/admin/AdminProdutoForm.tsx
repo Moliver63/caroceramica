@@ -12,6 +12,8 @@ function gerarSlug(nome: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+const LIMITE_IMAGENS = 10;
+
 function Formulario() {
   const { slug: slugEdicao } = useParams<{ slug?: string }>();
   const editando = !!slugEdicao;
@@ -71,6 +73,11 @@ function Formulario() {
   const salvando = criar.isPending || atualizar.isPending;
 
   async function handleUploadImagem(arquivo: File) {
+    if (imagens.length >= LIMITE_IMAGENS) {
+      setErro(`Limite de ${LIMITE_IMAGENS} imagens por peça atingido.`);
+      return;
+    }
+
     setErro(null);
     setEnviandoImagem(true);
     try {
@@ -243,7 +250,12 @@ function Formulario() {
         </div>
 
         <div>
-          <label className="text-sm text-marrom">Imagens</label>
+          <label className="text-sm text-marrom">
+            Imagens{" "}
+            <span className="text-marrom/50">
+              ({imagens.length}/{LIMITE_IMAGENS})
+            </span>
+          </label>
           <div className="mt-2 flex flex-wrap gap-3">
             {imagens.map((url) => (
               <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg bg-borda/30">
@@ -259,6 +271,7 @@ function Formulario() {
               </div>
             ))}
 
+            {imagens.length < LIMITE_IMAGENS && (
             <label className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-borda text-xs text-marrom hover:border-terracota">
               {enviandoImagem ? "Enviando…" : "+ Imagem"}
               <input
@@ -273,6 +286,7 @@ function Formulario() {
                 }}
               />
             </label>
+            )}
           </div>
         </div>
 

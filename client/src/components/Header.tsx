@@ -21,6 +21,28 @@ function IconeSacola({ className }: { className?: string }) {
   );
 }
 
+function IconeCadeado({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect
+        x="5"
+        y="10.5"
+        width="14"
+        height="9.5"
+        rx="1.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M8 10.5V7.5a4 4 0 0 1 8 0v3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 const links = [
   { href: "/catalogo/consultorio", label: "Consultório" },
   { href: "/catalogo/casa", label: "Casa" },
@@ -58,6 +80,15 @@ export default function Header() {
                 {totalItens}
               </span>
             )}
+          </Link>
+
+          <Link
+            href="/admin/produtos"
+            className="ml-2 border-l border-borda pl-6 text-marrom-escuro/40 hover:text-marrom-escuro"
+            aria-label="Acesso administrativo"
+            title="Acesso administrativo"
+          >
+            <IconeCadeado className="h-5 w-5" />
           </Link>
         </nav>
 
@@ -98,6 +129,14 @@ export default function Header() {
               {l.label}
             </Link>
           ))}
+          <Link
+            href="/admin/produtos"
+            onClick={() => setMenuAberto(false)}
+            className="mt-2 flex items-center gap-2 border-t border-borda py-3 text-sm text-marrom-escuro/50"
+          >
+            <IconeCadeado className="h-4 w-4" />
+            Acesso administrativo
+          </Link>
         </nav>
       )}
     </header>

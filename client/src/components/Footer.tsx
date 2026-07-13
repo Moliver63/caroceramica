@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { CATEGORIAS } from "@shared/const";
 
 export default function Footer() {
   return (
@@ -18,12 +19,11 @@ export default function Footer() {
         <div>
           <p className="eyebrow text-creme/50">Catálogo</p>
           <nav className="mt-4 flex flex-col gap-2 text-sm">
-            <Link href="/catalogo/consultorio" className="hover:text-terracota">
-              Para consultório
-            </Link>
-            <Link href="/catalogo/casa" className="hover:text-terracota">
-              Para casa
-            </Link>
+            {CATEGORIAS.map((c) => (
+              <Link key={c.valor} href={`/catalogo/${c.valor}`} className="hover:text-terracota">
+                {c.label}
+              </Link>
+            ))}
             <Link href="/carrinho" className="hover:text-terracota">
               Meu carrinho
             </Link>

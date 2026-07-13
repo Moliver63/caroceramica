@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { trpc } from "../../lib/trpc";
+import { CATEGORIAS, type Categoria } from "@shared/const";
 import AdminGuard from "./AdminGuard";
 
 function gerarSlug(nome: string) {
@@ -28,8 +29,8 @@ function Formulario() {
   const [nome, setNome] = useState(produtoExistente?.nome ?? "");
   const [slug, setSlug] = useState(produtoExistente?.slug ?? "");
   const [slugEditadoManualmente, setSlugEditadoManualmente] = useState(editando);
-  const [categoria, setCategoria] = useState<"consultorio" | "casa">(
-    produtoExistente?.categoria ?? "casa"
+  const [categoria, setCategoria] = useState<Categoria>(
+    produtoExistente?.categoria ?? "pronta-entrega"
   );
   const [descricao, setDescricao] = useState(produtoExistente?.descricao ?? "");
   const [precoBase, setPrecoBase] = useState(produtoExistente?.precoBase ?? "");
@@ -214,11 +215,14 @@ function Formulario() {
           <label className="text-sm text-marrom">Categoria</label>
           <select
             value={categoria}
-            onChange={(e) => setCategoria(e.target.value as "consultorio" | "casa")}
+            onChange={(e) => setCategoria(e.target.value as Categoria)}
             className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
           >
-            <option value="casa">Casa</option>
-            <option value="consultorio">Consultório</option>
+            {CATEGORIAS.map((c) => (
+              <option key={c.valor} value={c.valor}>
+                {c.label}
+              </option>
+            ))}
           </select>
         </div>
 

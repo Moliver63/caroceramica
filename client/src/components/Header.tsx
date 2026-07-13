@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { useState } from "react";
 import { useCarrinho } from "../lib/carrinho-context";
+import { CATEGORIAS } from "@shared/const";
 
 function IconeSacola({ className }: { className?: string }) {
   return (
@@ -43,10 +44,10 @@ function IconeCadeado({ className }: { className?: string }) {
   );
 }
 
-const links = [
-  { href: "/catalogo/consultorio", label: "Consultório" },
-  { href: "/catalogo/casa", label: "Casa" },
-];
+const links = CATEGORIAS.map((c) => ({
+  href: `/catalogo/${c.valor}`,
+  label: c.label,
+}));
 
 export default function Header() {
   const { totalItens } = useCarrinho();

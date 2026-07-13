@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import type { Produto } from "../lib/types";
+import { labelCategoria } from "@shared/const";
 
 export default function ProdutoCard({ produto }: { produto: Produto }) {
   return (
@@ -31,7 +32,7 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
       </div>
 
       <p className="eyebrow mt-3 text-marrom/60">
-        {produto.categoria === "consultorio" ? "Consultório" : "Casa"}
+        {labelCategoria(produto.categoria)}
       </p>
       <h3 className="font-serif text-lg text-marrom-escuro">{produto.nome}</h3>
       <p className="mt-0.5 text-terracota">

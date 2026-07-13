@@ -5,13 +5,13 @@ import { produtos, variantesCor, itensKit } from "../../shared/schema";
 async function seed() {
   console.log("Populando catálogo Caro Cerâmica...");
 
-  // ── Consultório ──
+  // ── Personalizados ──
   const [prato] = await db
     .insert(produtos)
     .values({
       nome: "Prato Oval Personalizado",
       slug: "prato-oval-personalizado",
-      categoria: "consultorio",
+      categoria: "personalizados",
       descricao:
         "Uma composição delicada para acolher ou presentear pacientes, transmitindo cuidado nos detalhes.",
       precoBase: "74.00",
@@ -28,7 +28,7 @@ async function seed() {
     .values({
       nome: "Amassadinho P",
       slug: "amassadinho-p",
-      categoria: "consultorio",
+      categoria: "personalizados",
       descricao: "Peça pequena e versátil, ideal para compor com o prato oval.",
       precoBase: "38.90",
       personalizavel: true,
@@ -40,9 +40,9 @@ async function seed() {
     .returning();
 
   await db.insert(produtos).values({
-    nome: "Kit Consultório (Prato Oval + Amassadinho P)",
-    slug: "kit-consultorio",
-    categoria: "consultorio",
+    nome: "Kit Personalizado (Prato Oval + Amassadinho P)",
+    slug: "kit-personalizado",
+    categoria: "personalizados",
     descricao: "Composição completa para acolher ou presentear pacientes.",
     precoBase: "112.90",
     personalizavel: true,

@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import { trpc } from "../lib/trpc";
+import { CATEGORIAS } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
@@ -26,37 +27,35 @@ export default function Home() {
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              href="/catalogo/consultorio"
-              className="rounded-full bg-marrom-escuro px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26]"
-            >
-              Para consultório
-            </Link>
-            <Link
-              href="/catalogo/casa"
-              className="rounded-full border border-marrom-escuro px-7 py-3 text-sm font-semibold text-marrom-escuro transition hover:bg-borda/30"
-            >
-              Para casa
-            </Link>
+            {CATEGORIAS.map((cat, i) => (
+              <Link
+                key={cat.valor}
+                href={`/catalogo/${cat.valor}`}
+                className={
+                  i === 0
+                    ? "rounded-full bg-marrom-escuro px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26]"
+                    : "rounded-full border border-marrom-escuro px-7 py-3 text-sm font-semibold text-marrom-escuro transition hover:bg-borda/30"
+                }
+              >
+                {cat.label}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Tiles de categoria — entrada visual pro catálogo, não só texto */}
-      <section className="mx-auto -mt-10 grid max-w-6xl gap-6 px-6 md:-mt-16 md:grid-cols-2 md:gap-8">
-        {[
-          { href: "/catalogo/consultorio", titulo: "Para consultório", desc: "Peças que acolhem quem chega." },
-          { href: "/catalogo/casa", titulo: "Para casa", desc: "Objetos que viram rotina e memória." },
-        ].map((cat) => (
+      <section className="mx-auto -mt-10 grid max-w-6xl gap-6 px-6 md:-mt-16 md:grid-cols-3 md:gap-8">
+        {CATEGORIAS.map((cat) => (
           <Link
-            key={cat.href}
-            href={cat.href}
+            key={cat.valor}
+            href={`/catalogo/${cat.valor}`}
             className="group relative flex h-48 items-end overflow-hidden rounded-2xl bg-marrom-escuro p-6 shadow-lg md:h-64"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-carvao/80 via-carvao/20 to-transparent transition group-hover:from-carvao/90" />
             <div className="relative">
-              <p className="font-serif text-2xl text-creme">{cat.titulo}</p>
-              <p className="mt-1 text-sm text-creme/70">{cat.desc}</p>
+              <p className="font-serif text-2xl text-creme">{cat.label}</p>
+              <p className="mt-1 text-sm text-creme/70">{cat.descricao}</p>
             </div>
           </Link>
         ))}

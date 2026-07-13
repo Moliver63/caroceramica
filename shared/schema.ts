@@ -16,7 +16,11 @@ import { relations } from "drizzle-orm";
 // ENUMS
 // ──────────────────────────────────────────────────────────
 
-export const categoriaEnum = pgEnum("categoria", ["consultorio", "casa"]);
+export const categoriaEnum = pgEnum("categoria", [
+  "personalizados",
+  "casa",
+  "pronta-entrega",
+]);
 
 export const statusArteEnum = pgEnum("status_arte", [
   "nao_aplicavel", // produto não personalizável

@@ -11,8 +11,6 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 export type Produto = RouterOutputs["produtos"]["listar"][number];
 export type VarianteCor = Produto["variantesCor"][number];
 
-export type Categoria = "consultorio" | "casa";
-
 export type StatusArte =
   | "nao_aplicavel"
   | "aguardando_upload"

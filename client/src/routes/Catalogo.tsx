@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "wouter";
 import { trpc } from "../lib/trpc";
+import { labelCategoria, type Categoria } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
@@ -8,13 +9,13 @@ import ProdutoCard from "../components/ProdutoCard";
 type Ordenacao = "relevancia" | "menor-preco" | "maior-preco" | "nome";
 
 export default function Catalogo() {
-  const { categoria } = useParams<{ categoria: "consultorio" | "casa" }>();
+  const { categoria } = useParams<{ categoria: Categoria }>();
   const { data: produtos = [], isLoading: carregando } = trpc.produtos.listar.useQuery({
     categoria,
   });
   const [ordenacao, setOrdenacao] = useState<Ordenacao>("relevancia");
 
-  const titulo = categoria === "consultorio" ? "Para consultório" : "Para casa";
+  const titulo = labelCategoria(categoria ?? "");
 
   const produtosOrdenados = useMemo(() => {
     const lista = [...produtos];

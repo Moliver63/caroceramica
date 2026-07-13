@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { VarianteCor } from "../lib/types";
 import { useCarrinho } from "../lib/carrinho-context";
 import { trpc } from "../lib/trpc";
+import { labelCategoria } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CarrosselImagens from "../components/CarrosselImagens";
@@ -68,7 +69,7 @@ export default function ProdutoDetalhe() {
 
         <div>
           <p className="eyebrow text-marrom/60">
-            {produto.categoria === "consultorio" ? "Consultório" : "Casa"}
+            {labelCategoria(produto.categoria)}
           </p>
           <h1 className="mt-1 font-serif text-3xl text-marrom-escuro">{produto.nome}</h1>
           <p className="mt-2 text-marrom">{produto.descricao}</p>

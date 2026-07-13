@@ -14,9 +14,10 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { produtos, itensKit } from "../../shared/schema";
+import { CATEGORIAS_VALIDAS } from "../../shared/const";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
-const categoriaSchema = z.enum(["consultorio", "casa"]);
+const categoriaSchema = z.enum(CATEGORIAS_VALIDAS);
 
 export const produtosRouter = router({
   // ── Listar produtos (com filtro opcional de categoria) ──────

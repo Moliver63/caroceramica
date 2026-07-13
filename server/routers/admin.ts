@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
@@ -42,34 +41,45 @@ export const adminRouter = router({
   // ── O client usa isso pra saber se já está logado ────────────
   sessaoAtual: publicProcedure.query(({ ctx }) => ({ isAdmin: ctx.isAdmin })),
 
-  // ── Assinatura pro upload direto no Cloudinary (o browser envia
-  //    a imagem direto pra Cloudinary, sem passar pelo nosso servidor) ──
-  gerarAssinaturaUpload: adminProcedure.mutation(() => {
-    if (
-      !ENV.cloudinaryCloudName ||
-      !ENV.cloudinaryApiKey ||
-      !ENV.cloudinaryApiSecret
-    ) {
+  // ── URL de upload direto do Cloudflare Images (o browser sobe a
+  //    imagem direto pro Cloudflare, sem passar pelo nosso servidor) ──
+  gerarUploadCloudflare: adminProcedure.mutation(async () => {
+    if (!ENV.cloudflareAccountId || !ENV.cloudflareApiToken) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Cloudinary não configurado no servidor (.env).",
+        message: "Cloudflare Images não configurado no servidor (.env).",
       });
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    const folder = "caro-ceramica/produtos";
+    let dados: { success?: boolean; result?: { uploadURL: string; id: string } };
+    try {
+      const resposta = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${ENV.cloudflareAccountId}/images/v2/direct_upload`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${ENV.cloudflareApiToken}`,
+          },
+          body: new URLSearchParams({ requireSignedURLs: "false" }),
+        }
+      );
+      dados = await resposta.json();
 
-    // Cloudinary exige a assinatura sobre os parâmetros em ordem alfabética,
-    // concatenados como "chave=valor&...", com o api_secret no final.
-    const paramsParaAssinar = `folder=${folder}&timestamp=${timestamp}${ENV.cloudinaryApiSecret}`;
-    const assinatura = createHash("sha1").update(paramsParaAssinar).digest("hex");
+      if (!resposta.ok || !dados.success || !dados.result) {
+        console.error("Erro ao gerar upload do Cloudflare Images:", dados);
+        throw new Error("resposta_invalida");
+      }
+    } catch (erro) {
+      console.error("Falha ao contatar o Cloudflare Images:", erro);
+      throw new TRPCError({
+        code: "BAD_GATEWAY",
+        message: "Não foi possível preparar o upload de imagem agora. Tente novamente.",
+      });
+    }
 
     return {
-      timestamp,
-      assinatura,
-      folder,
-      apiKey: ENV.cloudinaryApiKey,
-      cloudName: ENV.cloudinaryCloudName,
+      uploadURL: dados.result.uploadURL,
+      id: dados.result.id,
     };
   }),
 });

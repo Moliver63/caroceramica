@@ -13,7 +13,7 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-marrom/40">
-            <span className="font-serif text-sm">Caro Cerâmica</span>
+            <span className="font-serif text-sm">Caro Vargas</span>
           </div>
         )}
 

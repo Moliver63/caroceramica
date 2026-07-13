@@ -10,7 +10,13 @@ export default function PedidoConfirmado() {
       <Header />
 
       <div className="mx-auto max-w-xl px-6 py-20 text-center">
-        <h1 className="font-serif text-3xl text-marrom-escuro">
+        <img
+          src="/marca/selo.png"
+          alt="Selo Caro Vargas"
+          className="mx-auto h-24 w-auto rounded-2xl shadow-sm"
+        />
+
+        <h1 className="mt-8 font-serif text-3xl text-marrom-escuro">
           Pedido {codigo} recebido!
         </h1>
         <p className="mt-4 text-marrom">

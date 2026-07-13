@@ -5,7 +5,10 @@ export default function Footer() {
     <footer className="mt-24 bg-carvao text-creme/80">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
-          <p className="font-serif text-2xl text-creme">Caro Cerâmica</p>
+          <div className="flex items-center gap-2.5">
+            <img src="/marca/icone-creme.png" alt="" className="h-8 w-8" aria-hidden="true" />
+            <p className="font-serif text-2xl text-creme">Caro Vargas</p>
+          </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
             Peças de cerâmica feitas à mão, uma a uma, no torno. Cada uma leva o
             tempo que precisa — e carrega pequenas variações que são prova disso.
@@ -44,7 +47,7 @@ export default function Footer() {
           Cada peça possui pequenas variações de forma, textura e tonalidade —
           marcas do processo artesanal e da singularidade de cada criação.
         </p>
-        <p className="mt-2">© {new Date().getFullYear()} Caro Cerâmica. Feito à mão, com carinho.</p>
+        <p className="mt-2">© {new Date().getFullYear()} Caro Vargas Cerâmica. Feito à mão, com carinho.</p>
       </div>
     </footer>
   );

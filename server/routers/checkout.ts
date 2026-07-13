@@ -137,7 +137,7 @@ export const checkoutRouter = router({
         const cobranca = await criarCobranca({
           clienteAsaasId: clienteAsaas.id,
           valor: total,
-          descricao: `Pedido ${codigoPedido} — Caro Cerâmica`,
+          descricao: `Pedido ${codigoPedido} — Caro Vargas Cerâmica`,
           metodoPagamento: input.metodoPagamento,
           vencimento: vencimento.toISOString().split("T")[0],
           referenciaExterna: codigoPedido,

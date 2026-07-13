@@ -12,11 +12,49 @@ const cookieOpts = {
   path: "/",
 };
 
+// Rate limit simples em memória — suficiente pra um servidor de instância
+// única. Bloqueia um IP após muitas tentativas erradas seguidas.
+const LIMITE_TENTATIVAS = 8;
+const JANELA_MS = 15 * 60 * 1000; // 15 minutos
+const tentativasPorIp = new Map<string, { contagem: number; expiraEm: number }>();
+
+function ipBloqueado(ip: string): boolean {
+  const registro = tentativasPorIp.get(ip);
+  if (!registro) return false;
+  if (Date.now() > registro.expiraEm) {
+    tentativasPorIp.delete(ip);
+    return false;
+  }
+  return registro.contagem >= LIMITE_TENTATIVAS;
+}
+
+function registrarTentativaFalha(ip: string) {
+  const registro = tentativasPorIp.get(ip);
+  if (!registro || Date.now() > registro.expiraEm) {
+    tentativasPorIp.set(ip, { contagem: 1, expiraEm: Date.now() + JANELA_MS });
+  } else {
+    registro.contagem += 1;
+  }
+}
+
+function limparTentativas(ip: string) {
+  tentativasPorIp.delete(ip);
+}
+
 export const adminRouter = router({
   // ── Login por senha única (definida em ADMIN_PASSWORD) ──────
   login: publicProcedure
     .input(z.object({ senha: z.string().min(1) }))
     .mutation(({ input, ctx }) => {
+      const ip = ctx.req.ip ?? "desconhecido";
+
+      if (ipBloqueado(ip)) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.",
+        });
+      }
+
       if (!ENV.adminPassword || !ENV.adminSessionSecret) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -26,9 +64,11 @@ export const adminRouter = router({
       }
 
       if (input.senha !== ENV.adminPassword) {
+        registrarTentativaFalha(ip);
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Senha incorreta." });
       }
 
+      limparTentativas(ip);
       ctx.res.cookie(COOKIE_NOME, criarTokenSessao(), cookieOpts);
       return { sucesso: true as const };
     }),

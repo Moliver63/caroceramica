@@ -212,3 +212,94 @@ CLOUDINARY_API_SECRET=
 ```
 
 Precisam existir tanto no `.env` local quanto no Render → Environment.
+
+---
+
+## 10. Auditoria de 14/07/2026
+
+Auditoria completa do estado atual do projeto após a migração de
+arquitetura (seção 1). Resultado: build e typecheck passam limpos
+(`npm run check`, `npm run build`), e os testes manuais contra o
+tRPC (produtos, checkout, login admin) confirmaram que o servidor não
+cai mesmo com payload inválido ou falha do gateway Asaas — a correção
+de estabilidade aplicada antes da migração (try/catch no checkout,
+error handler global em `server/_core/index.ts`, `unhandledRejection`/
+`uncaughtException`) sobreviveu integralmente ao rewrite para tRPC.
+
+### 🔴 Crítico — credenciais reais expostas no repositório público
+
+O arquivo **`server/env`** (sem o ponto — por isso não caía na regra
+`server/.env` do `.gitignore`) estava commitado no `main` com a
+`DATABASE_URL` **real** de produção (usuário e senha do Postgres do
+Render) em texto puro, em repositório **público** no GitHub.
+
+- Removido do controle de versão e do disco (`git rm --cached server/env`)
+- Adicionada a entrada `server/env` ao `.gitignore`
+- **Ação recomendada fora deste repositório, ainda pendente:** trocar a
+  senha do usuário `caro_ceramica_user` no painel do Render (rotação de
+  credencial), já que ela ficou exposta publicamente por algum tempo —
+  qualquer pessoa com acesso ao histórico do Git tem essa senha.
+
+### ✅ Pendência da seção 8 resolvida — migração de categorias
+
+Conectado diretamente no Postgres de produção (Render) pra checar o
+enum `categoria`: ele **ainda estava no estado antigo**
+(`consultorio`, `casa`, sem `pronta-entrega`) — a suspeita da seção 8
+estava correta, a migration nunca tinha sido aplicada em produção.
+
+Executado `drizzle-kit migrate` contra a `DATABASE_URL` de produção.
+Resultado confirmado depois:
+
+```
+categoria (enum): personalizados, casa, pronta-entrega
+produtos: casa=5, personalizados=3
+```
+
+O catálogo em produção já reflete a categoria "Personalizados" —
+sem essa correção, o filtro por categoria no site ao vivo estaria
+quebrado (a UI usa os valores novos, o banco tinha os antigos).
+
+### Arquivos duplicados/obsoletos removidos
+
+Sobraram da época em que `client/` e `server/` eram pacotes npm
+separados; a raiz já tem os equivalentes corretos e nenhum script
+referenciava os antigos (confirmado com `npm run build`/`npm run check`
+antes e depois da remoção):
+
+- `server/drizzle.config.ts` e `server/drizzle/` (config e migration
+  antiga do schema pré-mudança — o correto é `./drizzle.config.ts` e
+  `./drizzle/`, apontando pra `shared/schema.ts`)
+- `client/tailwind.config.ts` (o correto é `./tailwind.config.ts`)
+- `server/package-lock.json` (sobra do `server/` como pacote próprio)
+- `server/README.md` (34 bytes, conteúdo corrompido/UTF-16 ilegível,
+  sem informação real)
+- `server/.env.example` (desatualizado — faltavam as variáveis de
+  admin e Cloudinary; o `.env.example` da raiz já está completo)
+
+### Pontos verificados e confirmados como corretos
+
+- **CORS**: não existe mais nenhum middleware de CORS no server — client
+  e server rodam no mesmo processo/origem, então não é necessário
+  (confirma a correção já registrada na seção 4)
+- **Rate limit de login**: testado manualmente — senha errada retorna
+  `401 Senha incorreta`, senha certa retorna sucesso; a lógica de
+  bloqueio por IP em `server/routers/admin.ts` está ativa
+- **Relação `itensKitRelations`** (fix de auditoria anterior) presente
+  e correta em `shared/schema.ts` após o rename de
+  `server/src/db/schema.ts`
+- **Webhook Asaas** (`server/routes/asaas-webhook.ts`) trata erro
+  internamente e sempre responde `200`, evitando reenvio agressivo do
+  gateway
+- Nenhum uso de `<a>` manual dentro de `<Link>` do wouter nos
+  componentes atuais (Header, ProdutoCard, Home, Carrinho) — o bug de
+  auditorias anteriores não foi reintroduzido no redesign
+
+### Pendências que continuam abertas (não resolvidas nesta auditoria)
+
+- ⚠️ `CLOUDINARY_CLOUD_NAME` — não foi possível confirmar o valor
+  correto (`dzty82u60`) no Render → Environment a partir deste
+  ambiente; precisa ser conferido/corrigido diretamente no painel do
+  Render
+- Rotação da senha do Postgres exposta (ver item crítico acima) —
+  requer acesso ao painel do Render, fora do escopo deste sandbox
+- Sem página "Sobre" / wordmark completo (já registrado na seção 8)

@@ -1,4 +1,4 @@
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import Home from "./routes/Home";
 import Catalogo from "./routes/Catalogo";
 import ProdutoDetalhe from "./routes/ProdutoDetalhe";
@@ -15,9 +15,13 @@ import AdminPedidos from "./routes/admin/AdminPedidos";
 import AdminPedidoDetalhe from "./routes/admin/AdminPedidoDetalhe";
 import AdminClientes from "./routes/admin/AdminClientes";
 import AdminEmails from "./routes/admin/AdminEmails";
+import BotaoWhatsApp from "./components/BotaoWhatsApp";
 import { CarrinhoProvider } from "./lib/carrinho-context";
 
 export default function App() {
+  const [location] = useLocation();
+  const ehAdmin = location.startsWith("/admin");
+
   return (
     <CarrinhoProvider>
       <Switch>
@@ -42,6 +46,8 @@ export default function App() {
           {() => <div className="p-10 text-center">Página não encontrada</div>}
         </Route>
       </Switch>
+
+      {!ehAdmin && <BotaoWhatsApp />}
     </CarrinhoProvider>
   );
 }

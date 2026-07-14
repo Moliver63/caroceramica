@@ -31,3 +31,28 @@ h1, h2, h3, .font-serif {
     9% 87%, 4% 79%, 0% 85%
   );
 }
+
+/* Vibração periódica do botão de WhatsApp — fica parado a maior parte
+   do tempo e "treme" rapidamente a cada poucos segundos, chamando
+   atenção sem ser irritante o tempo todo (diferente de uma animação
+   contínua, que cansa a vista). */
+@keyframes vibrar-whatsapp {
+  0%, 88%, 100% { transform: rotate(0deg) scale(1); }
+  89% { transform: rotate(-14deg) scale(1.06); }
+  90% { transform: rotate(13deg) scale(1.06); }
+  91% { transform: rotate(-12deg) scale(1.05); }
+  92% { transform: rotate(11deg) scale(1.05); }
+  93% { transform: rotate(-8deg) scale(1.03); }
+  94% { transform: rotate(7deg) scale(1.03); }
+  95%, 100% { transform: rotate(0deg) scale(1); }
+}
+.animate-vibrar-whatsapp {
+  animation: vibrar-whatsapp 4.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-vibrar-whatsapp {
+    animation: none;
+  }
+}

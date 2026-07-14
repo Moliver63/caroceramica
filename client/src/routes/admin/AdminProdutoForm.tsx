@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useLocation, useParams, Link } from "wouter";
 import { trpc } from "../../lib/trpc";
 import { CATEGORIAS, type Categoria } from "@shared/const";
 import AdminGuard from "./AdminGuard";
@@ -188,7 +188,10 @@ function Formulario() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <p className="eyebrow text-marrom/60">Admin</p>
+      <Link href="/admin/produtos" className="text-sm text-marrom hover:text-terracota">
+        ‹ Voltar aos produtos
+      </Link>
+      <p className="mt-3 eyebrow text-marrom/60">Admin</p>
       <h1 className="mt-1 font-serif text-2xl text-marrom-escuro">
         {editando ? "Editar peça" : "Nova peça"}
       </h1>

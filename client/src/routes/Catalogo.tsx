@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { trpc } from "../lib/trpc";
 import { labelCategoria, type Categoria } from "@shared/const";
 import Header from "../components/Header";
@@ -36,6 +36,14 @@ export default function Catalogo() {
       <Header />
 
       <section className="mx-auto max-w-6xl px-6 py-12">
+        <nav className="mb-4 flex items-center gap-1.5 text-sm text-marrom">
+          <Link href="/" className="hover:text-terracota">
+            Início
+          </Link>
+          <span>/</span>
+          <span className="text-marrom-escuro">{titulo}</span>
+        </nav>
+
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-borda pb-6">
           <div>
             <p className="eyebrow text-marrom/60">Catálogo</p>

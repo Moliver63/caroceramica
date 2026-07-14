@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { trpc } from "../../lib/trpc";
 import AdminGuard from "./AdminGuard";
 
@@ -23,7 +24,10 @@ function ListaLeads() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <div className="flex items-center justify-between">
+      <Link href="/admin/produtos" className="text-sm text-marrom hover:text-terracota">
+        ‹ Voltar aos produtos
+      </Link>
+      <div className="mt-2 flex items-center justify-between">
         <h1 className="font-serif text-2xl text-marrom-escuro">Admin — Lista de e-mails</h1>
         <button
           onClick={exportarCsv}

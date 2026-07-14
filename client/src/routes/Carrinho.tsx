@@ -27,7 +27,10 @@ export default function Carrinho() {
       <Header />
 
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="font-serif text-3xl text-marrom-escuro">Seu carrinho</h1>
+        <Link href="/" className="text-sm text-marrom hover:text-terracota">
+          ‹ Continuar comprando
+        </Link>
+        <h1 className="mt-2 font-serif text-3xl text-marrom-escuro">Seu carrinho</h1>
 
         <div className="mt-8 divide-y divide-borda">
           {itens.map((item) => {

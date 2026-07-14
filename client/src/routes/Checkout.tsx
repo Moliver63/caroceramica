@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useCarrinho } from "../lib/carrinho-context";
 import { trpc } from "../lib/trpc";
 import Header from "../components/Header";
@@ -80,7 +80,10 @@ export default function Checkout() {
       <Header />
 
       <div className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="font-serif text-3xl text-marrom-escuro">Checkout</h1>
+        <Link href="/carrinho" className="text-sm text-marrom hover:text-terracota">
+          ‹ Voltar ao carrinho
+        </Link>
+        <h1 className="mt-2 font-serif text-3xl text-marrom-escuro">Checkout</h1>
 
         <div className="mt-8 space-y-4">
           <h2 className="font-medium">Seus dados</h2>

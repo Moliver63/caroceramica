@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useEffect, useMemo, useState } from "react";
 import type { VarianteCor, VarianteArgila } from "../lib/types";
 import { useCarrinho } from "../lib/carrinho-context";
@@ -85,6 +85,20 @@ export default function ProdutoDetalhe() {
   return (
     <div>
       <Header />
+      <div className="mx-auto max-w-5xl px-6 pt-8">
+        <nav className="flex flex-wrap items-center gap-1.5 text-sm text-marrom">
+          <Link href="/" className="hover:text-terracota">
+            Início
+          </Link>
+          <span>/</span>
+          <Link href={`/catalogo/${produto.categoria}`} className="hover:text-terracota">
+            {labelCategoria(produto.categoria)}
+          </Link>
+          <span>/</span>
+          <span className="text-marrom-escuro">{produto.nome}</span>
+        </nav>
+      </div>
+
       <div className="mx-auto grid max-w-5xl gap-10 px-6 py-10 md:grid-cols-2">
         <CarrosselImagens imagens={imagensExibidas} nomeProduto={produto.nome} />
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { trpc } from "../../lib/trpc";
 
 export default function AdminLogin() {
@@ -47,6 +47,10 @@ export default function AdminLogin() {
           {login.isPending ? "Entrando…" : "Entrar"}
         </button>
       </form>
+
+      <Link href="/" className="mt-6 text-center text-sm text-marrom hover:text-terracota">
+        ‹ Voltar ao site
+      </Link>
     </div>
   );
 }

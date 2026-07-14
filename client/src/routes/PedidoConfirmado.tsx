@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -24,6 +24,13 @@ export default function PedidoConfirmado() {
           Peças artesanais têm prazo de produção de até 30 dias — vamos te
           manter avisado por e-mail a cada etapa.
         </p>
+
+        <Link
+          href="/"
+          className="mt-8 inline-block rounded-full bg-marrom-escuro px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26]"
+        >
+          Continuar comprando
+        </Link>
       </div>
 
       <Footer />

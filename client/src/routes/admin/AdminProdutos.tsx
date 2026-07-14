@@ -13,6 +13,12 @@ function ListaProdutos() {
         <h1 className="font-serif text-2xl text-marrom-escuro">Admin — Produtos</h1>
         <div className="flex gap-3">
           <Link
+            href="/admin/leads"
+            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
+          >
+            E-mails cadastrados
+          </Link>
+          <Link
             href="/admin/produtos/novo"
             className="rounded-full bg-marrom-escuro px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#3a2e26]"
           >

@@ -7,17 +7,20 @@
  *   trpc.produtos.buscarPorSlug.useQuery({ slug: "prato-oval-azul" })
  *   trpc.produtos.criar.useMutation()
  *   trpc.produtos.atualizar.useMutation()
+ *   trpc.produtos.criarVarianteCor.useMutation()
+ *   trpc.produtos.criarVarianteArgila.useMutation()
  */
 
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { produtos, itensKit } from "../../shared/schema";
+import { produtos, itensKit, variantesCor, variantesArgila } from "../../shared/schema";
 import { CATEGORIAS_VALIDAS } from "../../shared/const";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
 const categoriaSchema = z.enum(CATEGORIAS_VALIDAS);
+const tipoPersonalizacaoSchema = z.enum(["carimbo", "decalque"]);
 
 export const produtosRouter = router({
   // ── Listar produtos (com filtro opcional de categoria) ──────
@@ -30,7 +33,7 @@ export const produtosRouter = router({
         where: categoria
           ? eq(produtos.categoria, categoria)
           : eq(produtos.ativo, true),
-        with: { variantesCor: true },
+        with: { variantesCor: true, variantesArgila: true },
       });
     }),
 
@@ -40,7 +43,7 @@ export const produtosRouter = router({
     .query(async ({ input }) => {
       const produto = await db.query.produtos.findFirst({
         where: eq(produtos.slug, input.slug),
-        with: { variantesCor: true },
+        with: { variantesCor: true, variantesArgila: true },
       });
 
       if (!produto) {
@@ -71,7 +74,9 @@ export const produtosRouter = router({
         descricao: z.string().optional(),
         precoBase: z.string(),
         personalizavel: z.boolean().default(false),
+        tipoPersonalizacao: tipoPersonalizacaoSchema.optional(),
         custoPersonalizacao: z.string().optional(),
+        precoSobConsulta: z.boolean().default(false),
         ehKit: z.boolean().default(false),
         prazoProducaoDias: z.number().int().positive().default(30),
         observacaoArtesanal: z.string().optional(),
@@ -120,5 +125,50 @@ export const produtosRouter = router({
           message: "Não foi possível atualizar o produto. Verifique os dados enviados.",
         });
       }
+    }),
+
+  // ── Variantes de cor (esmalte) — admin ───────────────────────
+  criarVarianteCor: adminProcedure
+    .input(
+      z.object({
+        produtoId: z.number().int(),
+        nome: z.string().min(1),
+        codigoHex: z.string().optional(),
+        codigoFornecedor: z.string().optional(),
+        imagemUrl: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const [nova] = await db.insert(variantesCor).values(input).returning();
+      return nova;
+    }),
+
+  removerVarianteCor: adminProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input }) => {
+      await db.delete(variantesCor).where(eq(variantesCor.id, input.id));
+      return { sucesso: true as const };
+    }),
+
+  // ── Variantes de argila — admin ───────────────────────────────
+  criarVarianteArgila: adminProcedure
+    .input(
+      z.object({
+        produtoId: z.number().int(),
+        nome: z.string().min(1),
+        codigoHex: z.string().optional(),
+        imagemUrl: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const [nova] = await db.insert(variantesArgila).values(input).returning();
+      return nova;
+    }),
+
+  removerVarianteArgila: adminProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input }) => {
+      await db.delete(variantesArgila).where(eq(variantesArgila.id, input.id));
+      return { sucesso: true as const };
     }),
 });

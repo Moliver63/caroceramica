@@ -3,6 +3,7 @@ import { useLocation, useParams } from "wouter";
 import { trpc } from "../../lib/trpc";
 import { CATEGORIAS, type Categoria } from "@shared/const";
 import AdminGuard from "./AdminGuard";
+import GerenciarVariantes from "./GerenciarVariantes";
 
 function gerarSlug(nome: string) {
   return nome
@@ -14,6 +15,7 @@ function gerarSlug(nome: string) {
 }
 
 const LIMITE_IMAGENS = 10;
+type TipoPersonalizacao = "carimbo" | "decalque";
 
 function Formulario() {
   const { slug: slugEdicao } = useParams<{ slug?: string }>();
@@ -36,6 +38,12 @@ function Formulario() {
   const [precoBase, setPrecoBase] = useState(produtoExistente?.precoBase ?? "");
   const [personalizavel, setPersonalizavel] = useState(
     produtoExistente?.personalizavel ?? false
+  );
+  const [tipoPersonalizacao, setTipoPersonalizacao] = useState<TipoPersonalizacao>(
+    (produtoExistente?.tipoPersonalizacao as TipoPersonalizacao | null) ?? "carimbo"
+  );
+  const [precoSobConsulta, setPrecoSobConsulta] = useState(
+    produtoExistente?.precoSobConsulta ?? false
   );
   const [custoPersonalizacao, setCustoPersonalizacao] = useState(
     produtoExistente?.custoPersonalizacao ?? "0"
@@ -64,6 +72,10 @@ function Formulario() {
     setDescricao(produtoExistente.descricao ?? "");
     setPrecoBase(produtoExistente.precoBase);
     setPersonalizavel(produtoExistente.personalizavel);
+    setTipoPersonalizacao(
+      (produtoExistente.tipoPersonalizacao as TipoPersonalizacao | null) ?? "carimbo"
+    );
+    setPrecoSobConsulta(produtoExistente.precoSobConsulta);
     setCustoPersonalizacao(produtoExistente.custoPersonalizacao ?? "0");
     setPrazoProducaoDias(produtoExistente.prazoProducaoDias);
     setObservacaoArtesanal(produtoExistente.observacaoArtesanal ?? "");
@@ -140,8 +152,8 @@ function Formulario() {
   async function salvar() {
     setErro(null);
 
-    if (!nome.trim() || !slug.trim() || !precoBase) {
-      setErro("Preencha ao menos nome, slug e preço base.");
+    if (!nome.trim() || !slug.trim() || (!precoBase && !precoSobConsulta)) {
+      setErro("Preencha ao menos nome, slug e preço base (ou marque 'sob consulta').");
       return;
     }
 
@@ -150,9 +162,11 @@ function Formulario() {
       slug,
       categoria,
       descricao: descricao || undefined,
-      precoBase,
+      precoBase: precoBase || "0",
       personalizavel,
+      tipoPersonalizacao: personalizavel ? tipoPersonalizacao : undefined,
       custoPersonalizacao: personalizavel ? custoPersonalizacao : "0",
+      precoSobConsulta,
       prazoProducaoDias: Number(prazoProducaoDias),
       observacaoArtesanal: observacaoArtesanal || undefined,
       imagens,
@@ -229,9 +243,20 @@ function Formulario() {
           />
         </div>
 
+        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
+          <input
+            type="checkbox"
+            checked={precoSobConsulta}
+            onChange={(e) => setPrecoSobConsulta(e.target.checked)}
+          />
+          Preço sob consulta (não mostra valor fixo na vitrine)
+        </label>
+
         <div className="flex gap-4">
           <div className="flex-1">
-            <label className="text-sm text-marrom">Preço base (R$)</label>
+            <label className="text-sm text-marrom">
+              Preço base (R$){precoSobConsulta && " — opcional, uso interno"}
+            </label>
             <input
               value={precoBase}
               onChange={(e) => setPrecoBase(e.target.value)}
@@ -257,18 +282,31 @@ function Formulario() {
             checked={personalizavel}
             onChange={(e) => setPersonalizavel(e.target.checked)}
           />
-          Personalizável (carimbo)
+          Personalizável
         </label>
 
         {personalizavel && (
-          <div>
-            <label className="text-sm text-marrom">Custo da personalização (R$)</label>
-            <input
-              value={custoPersonalizacao}
-              onChange={(e) => setCustoPersonalizacao(e.target.value)}
-              placeholder="50.00"
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-            />
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="text-sm text-marrom">Tipo de personalização</label>
+              <select
+                value={tipoPersonalizacao}
+                onChange={(e) => setTipoPersonalizacao(e.target.value as TipoPersonalizacao)}
+                className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
+              >
+                <option value="carimbo">Carimbo</option>
+                <option value="decalque">Decalque</option>
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="text-sm text-marrom">Custo da personalização (R$)</label>
+              <input
+                value={custoPersonalizacao}
+                onChange={(e) => setCustoPersonalizacao(e.target.value)}
+                placeholder="50.00"
+                className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
+              />
+            </div>
           </div>
         )}
 
@@ -331,6 +369,18 @@ function Formulario() {
           <input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} />
           Ativo (visível no catálogo)
         </label>
+
+        {editando && produtoExistente ? (
+          <GerenciarVariantes
+            produtoId={produtoExistente.id}
+            variantesArgila={produtoExistente.variantesArgila}
+            variantesCor={produtoExistente.variantesCor}
+          />
+        ) : (
+          <p className="rounded-lg border border-dashed border-borda p-4 text-sm text-marrom">
+            Salve a peça primeiro pra poder cadastrar as cores de argila e esmalte.
+          </p>
+        )}
 
         {erro && <p className="text-sm text-red-700">{erro}</p>}
 

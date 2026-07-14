@@ -10,6 +10,7 @@ type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export type Produto = RouterOutputs["produtos"]["listar"][number];
 export type VarianteCor = Produto["variantesCor"][number];
+export type VarianteArgila = Produto["variantesArgila"][number];
 
 export type StatusArte =
   | "nao_aplicavel"
@@ -35,6 +36,7 @@ export interface ItemCarrinho {
   produtoId: number;
   produto: Pick<Produto, "id" | "nome" | "slug" | "precoBase" | "personalizavel" | "custoPersonalizacao">;
   varianteCorId: number | null;
+  varianteArgilaId?: number | null;
   quantidade: number;
 
   // Preenchido apenas se produto.personalizavel === true

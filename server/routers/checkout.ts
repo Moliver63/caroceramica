@@ -15,6 +15,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { pedidos, itensPedido } from "../../shared/schema";
 import { buscarOuCriarCliente, criarCobranca, buscarQrCodePix } from "../lib/asaas";
+import { calcularPorCep } from "./frete";
 import { publicProcedure, router } from "../_core/trpc";
 
 const enderecoSchema = z.object({
@@ -31,6 +32,7 @@ const enderecoSchema = z.object({
 const itemPedidoSchema = z.object({
   produtoId: z.number().int(),
   varianteCorId: z.number().int().nullable(),
+  varianteArgilaId: z.number().int().nullable().optional(),
   quantidade: z.number().int().positive(),
   precoUnitario: z.number().positive(),
   personalizado: z.boolean(),
@@ -76,7 +78,10 @@ export const checkoutRouter = router({
       );
       // Custo de personalização já embutido no precoUnitario enviado pelo client.
       const custoPersonalizacaoTotal = 0;
-      const total = subtotal; // frete calculado em etapa futura (Correios/Melhor Envio)
+
+      const freteCalculado = calcularPorCep(input.enderecoEntrega.cep);
+      const valorFrete = freteCalculado?.valor ?? 0;
+      const total = subtotal + valorFrete;
 
       const codigoPedido = gerarCodigoPedido();
 
@@ -99,6 +104,7 @@ export const checkoutRouter = router({
               : "cartao_credito",
           subtotal: subtotal.toFixed(2),
           custoPersonalizacaoTotal: custoPersonalizacaoTotal.toFixed(2),
+          frete: valorFrete.toFixed(2),
           total: total.toFixed(2),
         })
         .returning();
@@ -108,6 +114,7 @@ export const checkoutRouter = router({
           pedidoId: pedido.id,
           produtoId: item.produtoId,
           varianteCorId: item.varianteCorId,
+          varianteArgilaId: item.varianteArgilaId ?? null,
           quantidade: item.quantidade,
           precoUnitario: item.precoUnitario.toFixed(2),
           personalizado: item.personalizado,
@@ -160,6 +167,7 @@ export const checkoutRouter = router({
           gateway: "asaas" as const,
           linkPagamento: cobranca.invoiceUrl,
           ...pix,
+          frete: valorFrete,
           totalCentavos: Math.round(total * 100),
         };
       } catch (erroGateway) {

@@ -1,9 +1,20 @@
 import { Link } from "wouter";
 import { CATEGORIAS } from "@shared/const";
+import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
   return (
     <footer className="mt-24 bg-carvao text-creme/80">
+      <div className="mx-auto max-w-6xl border-b border-creme/10 px-6 py-12">
+        <p className="eyebrow text-creme/50">Fique por dentro</p>
+        <p className="mt-1 max-w-md font-serif text-xl text-creme">
+          Novidades e promoções direto no seu e-mail, sem spam.
+        </p>
+        <div className="mt-5 max-w-md">
+          <NewsletterForm />
+        </div>
+      </div>
+
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2.5">
@@ -27,6 +38,9 @@ export default function Footer() {
             <Link href="/carrinho" className="hover:text-terracota">
               Meu carrinho
             </Link>
+            <Link href="/historia" className="hover:text-terracota">
+              Nossa história
+            </Link>
           </nav>
         </div>
 
@@ -35,6 +49,14 @@ export default function Footer() {
           <div className="mt-4 flex flex-col gap-2 text-sm">
             <a href="mailto:contato@carovargas.com.br" className="hover:text-terracota">
               contato@carovargas.com.br
+            </a>
+            <a
+              href="https://www.instagram.com/carovargas.ceramica"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-terracota"
+            >
+              @carovargas.ceramica
             </a>
             <p>Produção sob encomenda — prazo informado em cada peça.</p>
             <p>Pagamento via Pix, boleto ou cartão.</p>

@@ -44,10 +44,13 @@ function IconeCadeado({ className }: { className?: string }) {
   );
 }
 
-const links = CATEGORIAS.map((c) => ({
-  href: `/catalogo/${c.valor}`,
-  label: c.label,
-}));
+const links = [
+  ...CATEGORIAS.map((c) => ({
+    href: `/catalogo/${c.valor}`,
+    label: c.label,
+  })),
+  { href: "/historia", label: "Nossa história" },
+];
 
 export default function Header() {
   const { totalItens } = useCarrinho();

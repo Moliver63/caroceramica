@@ -32,6 +32,14 @@ export default function Checkout() {
   const criarPedido = trpc.checkout.criarPedido.useMutation();
   const enviando = criarPedido.isPending;
 
+  const cepLimpo = endereco.cep.replace(/\D/g, "");
+  const { data: frete, isFetching: calculandoFrete } = trpc.frete.calcular.useQuery(
+    { cep: cepLimpo },
+    { enabled: cepLimpo.length === 8 }
+  );
+  const valorFrete = frete?.encontrado ? frete.valor : 0;
+  const total = subtotal + valorFrete;
+
   async function finalizarPedido() {
     setErro(null);
 
@@ -42,6 +50,7 @@ export default function Checkout() {
         itens: itens.map((i) => ({
           produtoId: i.produtoId,
           varianteCorId: i.varianteCorId,
+          varianteArgilaId: i.varianteArgilaId ?? null,
           quantidade: i.quantidade,
           precoUnitario:
             Number(i.produto.precoBase) +
@@ -141,6 +150,21 @@ export default function Checkout() {
             />
           </div>
 
+          {cepLimpo.length === 8 && (
+            <p className="text-sm text-marrom">
+              {calculandoFrete && "Calculando frete…"}
+              {!calculandoFrete && frete?.encontrado && (
+                <>
+                  Frete para {frete.regiao}: <strong>R$ {frete.valor.toFixed(2).replace(".", ",")}</strong>{" "}
+                  — chega em até {frete.prazoDias} dias úteis após a produção
+                </>
+              )}
+              {!calculandoFrete && frete && !frete.encontrado && (
+                <span className="text-red-600">{frete.mensagem}</span>
+              )}
+            </p>
+          )}
+
           <h2 className="pt-4 font-medium">Forma de pagamento (Asaas)</h2>
           <div className="flex gap-3">
             {(["PIX", "BOLETO", "CREDIT_CARD"] as const).map((metodo) => (
@@ -161,9 +185,15 @@ export default function Checkout() {
           {erro && <p className="text-sm text-red-600">{erro}</p>}
 
           <div className="flex items-center justify-between border-t border-borda pt-6">
-            <p className="text-lg font-medium">
-              Total: R$ {subtotal.toFixed(2).replace(".", ",")}
-            </p>
+            <div>
+              <p className="text-sm text-marrom">
+                Subtotal: R$ {subtotal.toFixed(2).replace(".", ",")}
+                {valorFrete > 0 && ` + Frete: R$ ${valorFrete.toFixed(2).replace(".", ",")}`}
+              </p>
+              <p className="text-lg font-medium">
+                Total: R$ {total.toFixed(2).replace(".", ",")}
+              </p>
+            </div>
             <button
               onClick={finalizarPedido}
               disabled={enviando}

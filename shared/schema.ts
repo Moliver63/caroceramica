@@ -48,6 +48,11 @@ export const metodoPagamentoEnum = pgEnum("metodo_pagamento", [
   "cartao_credito",
 ]);
 
+export const tipoPersonalizacaoEnum = pgEnum("tipo_personalizacao", [
+  "carimbo",
+  "decalque",
+]);
+
 // ──────────────────────────────────────────────────────────
 // PRODUTOS
 // ──────────────────────────────────────────────────────────
@@ -63,10 +68,14 @@ export const produtos = pgTable("produtos", {
 
   // Personalização (carimbo exclusivo, gravação, etc.)
   personalizavel: boolean("personalizavel").notNull().default(false),
+  tipoPersonalizacao: tipoPersonalizacaoEnum("tipo_personalizacao"),
   custoPersonalizacao: numeric("custo_personalizacao", {
     precision: 10,
     scale: 2,
   }).default("0"),
+
+  // Quando true, esconde precoBase na vitrine e mostra "Sob consulta"
+  precoSobConsulta: boolean("preco_sob_consulta").notNull().default(false),
 
   // Kit (ex: prato oval + amassadinho P)
   ehKit: boolean("eh_kit").notNull().default(false),
@@ -97,6 +106,18 @@ export const variantesCor = pgTable("variantes_cor", {
   estoqueDisponivel: boolean("estoque_disponivel").notNull().default(true),
 });
 
+// Variantes de cor da argila (antes do esmalte) — ex: Terracota, Branca, Preta
+export const variantesArgila = pgTable("variantes_argila", {
+  id: serial("id").primaryKey(),
+  produtoId: integer("produto_id")
+    .notNull()
+    .references(() => produtos.id, { onDelete: "cascade" }),
+  nome: varchar("nome", { length: 80 }).notNull(),
+  codigoHex: varchar("codigo_hex", { length: 7 }),
+  imagemUrl: text("imagem_url"),
+  estoqueDisponivel: boolean("estoque_disponivel").notNull().default(true),
+});
+
 // Itens que compõem um kit (auto-relação produto -> produto)
 export const itensKit = pgTable("itens_kit", {
   id: serial("id").primaryKey(),
@@ -111,12 +132,20 @@ export const itensKit = pgTable("itens_kit", {
 
 export const produtosRelations = relations(produtos, ({ many }) => ({
   variantesCor: many(variantesCor),
+  variantesArgila: many(variantesArgila),
   itensDoKit: many(itensKit, { relationName: "kit" }),
 }));
 
 export const variantesCorRelations = relations(variantesCor, ({ one }) => ({
   produto: one(produtos, {
     fields: [variantesCor.produtoId],
+    references: [produtos.id],
+  }),
+}));
+
+export const variantesArgilaRelations = relations(variantesArgila, ({ one }) => ({
+  produto: one(produtos, {
+    fields: [variantesArgila.produtoId],
     references: [produtos.id],
   }),
 }));
@@ -186,6 +215,7 @@ export const itensPedido = pgTable("itens_pedido", {
     .notNull()
     .references(() => produtos.id),
   varianteCorId: integer("variante_cor_id").references(() => variantesCor.id),
+  varianteArgilaId: integer("variante_argila_id").references(() => variantesArgila.id),
 
   quantidade: integer("quantidade").notNull().default(1),
   precoUnitario: numeric("preco_unitario", { precision: 10, scale: 2 }).notNull(),
@@ -215,4 +245,20 @@ export const itensPedidoRelations = relations(itensPedido, ({ one }) => ({
     fields: [itensPedido.varianteCorId],
     references: [variantesCor.id],
   }),
+  varianteArgila: one(variantesArgila, {
+    fields: [itensPedido.varianteArgilaId],
+    references: [variantesArgila.id],
+  }),
 }));
+
+// ──────────────────────────────────────────────────────────
+// LEADS (cadastro pra newsletter/promoções)
+// ──────────────────────────────────────────────────────────
+
+export const leads = pgTable("leads", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 160 }).notNull().unique(),
+  nome: varchar("nome", { length: 160 }),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+  ativo: boolean("ativo").notNull().default(true),
+});

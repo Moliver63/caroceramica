@@ -36,7 +36,9 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
       </p>
       <h3 className="font-serif text-lg text-marrom-escuro">{produto.nome}</h3>
       <p className="mt-0.5 text-terracota">
-        R$ {Number(produto.precoBase).toFixed(2).replace(".", ",")}
+        {produto.precoSobConsulta
+          ? "Sob consulta"
+          : `R$ ${Number(produto.precoBase).toFixed(2).replace(".", ",")}`}
       </p>
     </Link>
   );

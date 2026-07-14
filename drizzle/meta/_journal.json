@@ -43,6 +43,13 @@
       "when": 1784058477069,
       "tag": "0005_stiff_cyclops",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784062209026,
+      "tag": "0006_even_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }

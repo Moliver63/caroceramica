@@ -9,6 +9,7 @@ import { serveStatic, setupVite } from "./vite";
 import { ENV } from "./env";
 import asaasWebhookRouter from "../routes/asaas-webhook";
 import resendWebhookRouter from "../routes/resend-webhook";
+import cronRouter from "../routes/cron";
 
 async function startServer() {
   const app = express();
@@ -37,6 +38,9 @@ async function startServer() {
 
   // Webhook do Resend — recebe e-mails enviados pra contato@carovargas.com.br
   app.use("/api/webhooks/resend", resendWebhookRouter);
+
+  // Endpoints de cron (verificação periódica, chamados por serviço externo)
+  app.use("/api/cron", cronRouter);
 
   // API tRPC — todas as chamadas do client passam por aqui
   app.use(

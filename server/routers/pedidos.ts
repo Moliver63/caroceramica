@@ -3,7 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { pedidos, pedidoEventos } from "../../shared/schema";
-import { enviarEmail, emailPedidoEnviado } from "../lib/email";
+import { enviarEmail, emailPedidoEnviado, emailPedidoEntregue } from "../lib/email";
 import { adminProcedure, router } from "../_core/trpc";
 
 const statusValidos = [
@@ -91,6 +91,17 @@ export const pedidosRouter = router({
             codigoPedido: atualizado.codigoPedido,
             transportadora: atualizado.transportadora,
             codigoRastreio: atualizado.codigoRastreio,
+          }),
+        });
+      }
+
+      if (input.status === "entregue") {
+        await enviarEmail({
+          para: atualizado.clienteEmail,
+          assunto: `Pedido ${atualizado.codigoPedido} entregue — Caro Vargas Cerâmica`,
+          html: emailPedidoEntregue({
+            nomeCliente: atualizado.clienteNome,
+            codigoPedido: atualizado.codigoPedido,
           }),
         });
       }

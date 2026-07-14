@@ -15,8 +15,9 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { produtos, itensKit, variantesCor, variantesArgila } from "../../shared/schema";
+import { produtos, itensKit, variantesCor, variantesArgila, leads } from "../../shared/schema";
 import { CATEGORIAS_VALIDAS } from "../../shared/const";
+import { enviarEmail, emailNovoProduto } from "../lib/email";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
 const categoriaSchema = z.enum(CATEGORIAS_VALIDAS);
@@ -172,5 +173,39 @@ export const produtosRouter = router({
     .mutation(async ({ input }) => {
       await db.delete(variantesArgila).where(eq(variantesArgila.id, input.id));
       return { sucesso: true as const };
+    }),
+
+  // ── Avisar assinantes da newsletter sobre uma peça (manual,
+  //    disparado pelo admin — não é automático a cada produto criado,
+  //    pra não virar spam se várias peças forem cadastradas seguidas) ──
+  notificarNovidade: adminProcedure
+    .input(z.object({ produtoId: z.number().int() }))
+    .mutation(async ({ input }) => {
+      const produto = await db.query.produtos.findFirst({
+        where: eq(produtos.id, input.produtoId),
+      });
+      if (!produto) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Produto não encontrado" });
+      }
+
+      const assinantes = await db.query.leads.findMany({
+        where: eq(leads.ativo, true),
+      });
+
+      const html = emailNovoProduto({
+        nomeProduto: produto.nome,
+        slug: produto.slug,
+        descricao: produto.descricao,
+      });
+
+      for (const assinante of assinantes) {
+        await enviarEmail({
+          para: assinante.email,
+          assunto: `Novidade no ateliê: ${produto.nome}`,
+          html,
+        });
+      }
+
+      return { sucesso: true as const, enviados: assinantes.length };
     }),
 });

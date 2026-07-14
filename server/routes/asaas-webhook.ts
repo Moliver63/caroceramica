@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { pedidos } from "../../shared/schema";
+import { pedidos, pedidoEventos } from "../../shared/schema";
+import { enviarEmail, emailPagamentoConfirmado } from "../lib/email";
 
 const asaasWebhookRouter = Router();
 
@@ -14,10 +15,28 @@ asaasWebhookRouter.post("/", async (req, res) => {
       (event === "PAYMENT_CONFIRMED" || event === "PAYMENT_RECEIVED") &&
       payment?.id
     ) {
-      await db
+      const [atualizado] = await db
         .update(pedidos)
         .set({ status: "pago", atualizadoEm: new Date() })
-        .where(eq(pedidos.gatewayReferenciaId, payment.id));
+        .where(eq(pedidos.gatewayReferenciaId, payment.id))
+        .returning();
+
+      if (atualizado) {
+        await db.insert(pedidoEventos).values({
+          pedidoId: atualizado.id,
+          status: "pago",
+          descricao: "Pagamento confirmado pelo gateway.",
+        });
+
+        await enviarEmail({
+          para: atualizado.clienteEmail,
+          assunto: `Pagamento confirmado — Pedido ${atualizado.codigoPedido}`,
+          html: emailPagamentoConfirmado({
+            nomeCliente: atualizado.clienteNome,
+            codigoPedido: atualizado.codigoPedido,
+          }),
+        });
+      }
     }
 
     res.sendStatus(200);

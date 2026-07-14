@@ -110,6 +110,7 @@ function Formulario() {
   const gerarUpload = trpc.admin.gerarUploadCloudflare.useMutation();
   const criar = trpc.produtos.criar.useMutation();
   const atualizar = trpc.produtos.atualizar.useMutation();
+  const notificarNovidade = trpc.produtos.notificarNovidade.useMutation();
   const salvando = criar.isPending || atualizar.isPending;
 
   async function handleUploadImagens(arquivos: FileList) {
@@ -215,6 +216,19 @@ function Formulario() {
       titulo={editando ? "Editar peça" : "Nova peça"}
       acoes={
         <>
+          {editando && produtoExistente && (
+            <Botao
+              variante="secundario"
+              onClick={() => notificarNovidade.mutate({ produtoId: produtoExistente.id })}
+              disabled={notificarNovidade.isPending}
+            >
+              {notificarNovidade.isPending
+                ? "Enviando…"
+                : notificarNovidade.isSuccess
+                ? `Avisados ${notificarNovidade.data.enviados}`
+                : "Avisar assinantes"}
+            </Botao>
+          )}
           <Botao variante="secundario" onClick={() => navegar("/admin/produtos")}>
             Cancelar
           </Botao>

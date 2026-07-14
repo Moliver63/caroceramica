@@ -1,0 +1,1 @@
+ALTER TABLE "pedidos" ADD COLUMN "lembrete_abandono_enviado" boolean DEFAULT false NOT NULL;

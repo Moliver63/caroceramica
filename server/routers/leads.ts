@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { leads } from "../../shared/schema";
+import { enviarEmail, emailBoasVindasNewsletter } from "../lib/email";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
 export const leadsRouter = router({
@@ -18,6 +19,13 @@ export const leadsRouter = router({
             target: leads.email,
             set: { ativo: true, nome: input.nome },
           });
+
+        await enviarEmail({
+          para: input.email,
+          assunto: "Bem-vindo(a) à Caro Vargas Cerâmica",
+          html: emailBoasVindasNewsletter(),
+        });
+
         return { sucesso: true as const };
       } catch (erro) {
         console.error("Erro ao cadastrar lead:", erro);

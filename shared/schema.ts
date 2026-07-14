@@ -212,6 +212,10 @@ export const pedidos = pgTable("pedidos", {
   transportadora: varchar("transportadora", { length: 60 }),
   codigoRastreio: varchar("codigo_rastreio", { length: 60 }),
 
+  // true depois que o lembrete de "checkout abandonado" foi mandado —
+  // evita mandar o mesmo lembrete mais de uma vez pro mesmo pedido
+  lembreteAbandonoEnviado: boolean("lembrete_abandono_enviado").notNull().default(false),
+
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
   atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
 });

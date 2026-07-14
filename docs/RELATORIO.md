@@ -178,14 +178,18 @@ para o volume do Caro Cerâmica.
 
 ## 8. Pendências conhecidas
 
+- 🔴 **CRÍTICO — ação sua pendente:** a `DATABASE_URL` de produção
+  (usuário/senha reais do Postgres) ficou exposta publicamente no
+  GitHub por um tempo (arquivo `server/env`, sem ponto, não coberto
+  pelo `.gitignore` na época — já corrigido no repositório). **A senha
+  do usuário `caro_ceramica_user` precisa ser trocada no painel do
+  Render**, já que qualquer pessoa que tenha visto o repo público nesse
+  período teve acesso a ela. Isso não é opcional.
 - ⚠️ **`CLOUDINARY_CLOUD_NAME`** precisa ser corrigido para `dzty82u60`
   (valor errado configurado anteriormente) — local (`.env`) e no Render
   (Environment)
-- ⚠️ **Migration de categorias** (`npm run db:migrate`) ainda não
-  confirmada como aplicada com sucesso no banco de produção — houve um
-  erro (`[prodenv:...] Request forbidden`) de origem não identificada,
-  possivelmente relacionado ao ambiente local (antivírus/firewall) e
-  não ao banco em si. Precisa reexecutar e confirmar.
+- ~~Migration de categorias não confirmada em produção~~ — **resolvido**,
+  ver seção 10
 - Sem página "Sobre" ou uso do wordmark completo da logo (`CARO VARGAS`
   com o "O" estilizado) — só o ícone foi aplicado até agora
 - Rate limit de login é em memória (adequado para instância única no

@@ -1,6 +1,7 @@
-import { Link } from "wouter";
 import { trpc } from "../../lib/trpc";
 import AdminGuard from "./AdminGuard";
+import AdminLayout from "./AdminLayout";
+import { Card, Botao, EmptyState } from "./AdminUI";
 
 function ListaLeads() {
   const { data: leads = [], isLoading } = trpc.leads.listar.useQuery();
@@ -23,50 +24,49 @@ function ListaLeads() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
-      <Link href="/admin/produtos" className="text-sm text-marrom hover:text-terracota">
-        ‹ Voltar aos produtos
-      </Link>
-      <div className="mt-2 flex items-center justify-between">
-        <h1 className="font-serif text-2xl text-marrom-escuro">Admin — Lista de e-mails</h1>
-        <button
-          onClick={exportarCsv}
-          disabled={leads.length === 0}
-          className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro disabled:opacity-40"
-        >
+    <AdminLayout
+      titulo="Newsletter"
+      acoes={
+        <Botao variante="secundario" onClick={exportarCsv} disabled={leads.length === 0}>
           Exportar CSV
-        </button>
-      </div>
+        </Botao>
+      }
+    >
+      <p className="-mt-3 mb-6 text-sm text-[#8C7A6B]">
+        {leads.length} {leads.length === 1 ? "e-mail cadastrado" : "e-mails cadastrados"} pra receber novidades.
+      </p>
 
-      <p className="mt-2 text-sm text-marrom">{leads.length} cadastrados</p>
-
-      {isLoading && <p className="mt-6 text-marrom">Carregando…</p>}
+      {isLoading && <p className="text-sm text-[#8C7A6B]">Carregando…</p>}
 
       {!isLoading && leads.length === 0 && (
-        <p className="mt-6 text-marrom">Ninguém cadastrou o e-mail ainda.</p>
+        <EmptyState>Ninguém cadastrou o e-mail ainda.</EmptyState>
       )}
 
       {leads.length > 0 && (
-        <table className="mt-6 w-full text-sm">
-          <thead>
-            <tr className="border-b border-borda text-left text-marrom">
-              <th className="py-2">E-mail</th>
-              <th>Nome</th>
-              <th>Cadastrado em</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((l) => (
-              <tr key={l.id} className="border-b border-borda/50">
-                <td className="py-2">{l.email}</td>
-                <td>{l.nome ?? "—"}</td>
-                <td>{new Date(l.criadoEm).toLocaleDateString("pt-BR")}</td>
+        <Card className="overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/5 bg-black/[0.02] text-left text-xs uppercase tracking-wide text-[#8C7A6B]">
+                <th className="px-5 py-3 font-medium">E-mail</th>
+                <th className="px-3 py-3 font-medium">Nome</th>
+                <th className="px-5 py-3 font-medium">Cadastrado em</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {leads.map((l) => (
+                <tr key={l.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.015]">
+                  <td className="px-5 py-3 text-[#2B2420]">{l.email}</td>
+                  <td className="px-3 py-3 text-[#6b6459]">{l.nome ?? "—"}</td>
+                  <td className="px-5 py-3 text-[#6b6459]">
+                    {new Date(l.criadoEm).toLocaleDateString("pt-BR")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
-    </div>
+    </AdminLayout>
   );
 }
 

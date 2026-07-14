@@ -1,92 +1,72 @@
 import { Link } from "wouter";
 import { trpc } from "../../lib/trpc";
+import { labelCategoria } from "@shared/const";
 import AdminGuard from "./AdminGuard";
+import AdminLayout from "./AdminLayout";
+import { Card, Badge, BotaoLink, EmptyState } from "./AdminUI";
 
 function ListaProdutos() {
-  const { data: produtos = [] } = trpc.produtos.listar.useQuery();
-  const logout = trpc.admin.logout.useMutation();
-  const utils = trpc.useUtils();
+  const { data: produtos = [], isLoading } = trpc.produtos.listar.useQuery();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
-      <Link href="/" className="text-sm text-marrom hover:text-terracota">
-        ‹ Ver site
-      </Link>
-      <div className="mt-2 flex items-center justify-between">
-        <h1 className="font-serif text-2xl text-marrom-escuro">Admin — Produtos</h1>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/admin/pedidos"
-            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
-          >
-            Pedidos
-          </Link>
-          <Link
-            href="/admin/clientes"
-            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
-          >
-            Clientes
-          </Link>
-          <Link
-            href="/admin/emails"
-            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
-          >
-            E-mails
-          </Link>
-          <Link
-            href="/admin/leads"
-            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
-          >
-            E-mails cadastrados
-          </Link>
-          <Link
-            href="/admin/produtos/novo"
-            className="rounded-full bg-marrom-escuro px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#3a2e26]"
-          >
-            + Nova peça
-          </Link>
-          <button
-            onClick={() => logout.mutate(undefined, { onSuccess: () => utils.admin.sessaoAtual.invalidate() })}
-            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
-          >
-            Sair
-          </button>
-        </div>
-      </div>
+    <AdminLayout
+      titulo="Produtos"
+      acoes={
+        <BotaoLink href="/admin/produtos/novo" variante="primario">
+          + Nova peça
+        </BotaoLink>
+      }
+    >
+      {isLoading && <p className="text-sm text-[#8C7A6B]">Carregando…</p>}
 
-      <table className="mt-6 w-full text-sm">
-        <thead>
-          <tr className="border-b border-borda text-left text-marrom">
-            <th className="py-2">Nome</th>
-            <th>Categoria</th>
-            <th>Preço</th>
-            <th>Personalizável</th>
-            <th>Ativo</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {produtos.map((p) => (
-            <tr key={p.id} className="border-b border-borda/50">
-              <td className="py-2">{p.nome}</td>
-              <td>{p.categoria}</td>
-              <td>R$ {Number(p.precoBase).toFixed(2).replace(".", ",")}</td>
-              <td>{p.personalizavel ? "Sim" : "Não"}</td>
-              <td>{p.ativo ? "Ativo" : "Inativo"}</td>
-              <td>
-                <Link href={`/admin/produtos/${p.slug}/editar`} className="text-terracota hover:underline">
-                  Editar
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {produtos.length === 0 && (
-        <p className="mt-6 text-marrom">Nenhuma peça cadastrada ainda.</p>
+      {!isLoading && produtos.length === 0 && (
+        <EmptyState>Nenhuma peça cadastrada ainda.</EmptyState>
       )}
-    </div>
+
+      {produtos.length > 0 && (
+        <Card className="overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/5 bg-black/[0.02] text-left text-xs uppercase tracking-wide text-[#8C7A6B]">
+                <th className="px-5 py-3 font-medium">Peça</th>
+                <th className="px-3 py-3 font-medium">Categoria</th>
+                <th className="px-3 py-3 font-medium">Preço</th>
+                <th className="px-3 py-3 font-medium">Estoque</th>
+                <th className="px-3 py-3 font-medium">Status</th>
+                <th className="px-5 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {produtos.map((p) => (
+                <tr key={p.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.015]">
+                  <td className="px-5 py-3 font-medium text-[#2B2420]">{p.nome}</td>
+                  <td className="px-3 py-3 text-[#6b6459]">{labelCategoria(p.categoria)}</td>
+                  <td className="px-3 py-3 text-[#6b6459]">
+                    {p.precoSobConsulta ? "Sob consulta" : `R$ ${Number(p.precoBase).toFixed(2).replace(".", ",")}`}
+                  </td>
+                  <td className="px-3 py-3 text-[#6b6459]">
+                    {p.controlarEstoque ? p.estoque : <span className="text-[#8C7A6B]/60">—</span>}
+                  </td>
+                  <td className="px-3 py-3">
+                    <Badge cor={p.ativo ? "bg-esmalte-claro text-esmalte" : "bg-black/5 text-[#8C7A6B]"}>
+                      {p.ativo ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <Link
+                      href={`/admin/produtos/${p.slug}/editar`}
+                      className="text-sm font-medium text-terracota hover:underline"
+                    >
+                      Editar
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </AdminLayout>
   );
 }
 

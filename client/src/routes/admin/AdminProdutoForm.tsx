@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
-import { useLocation, useParams, Link } from "wouter";
+import { useEffect, useState, type ReactNode } from "react";
+import { useLocation, useParams } from "wouter";
 import { trpc } from "../../lib/trpc";
 import { CATEGORIAS, type Categoria } from "@shared/const";
 import AdminGuard from "./AdminGuard";
+import AdminLayout from "./AdminLayout";
 import GerenciarVariantes from "./GerenciarVariantes";
+import { Card, Botao, Label, campoBase } from "./AdminUI";
 
 function gerarSlug(nome: string) {
   return nome
@@ -16,6 +18,24 @@ function gerarSlug(nome: string) {
 
 const LIMITE_IMAGENS = 10;
 type TipoPersonalizacao = "carimbo" | "decalque";
+
+function Secao({
+  titulo,
+  descricao,
+  children,
+}: {
+  titulo: string;
+  descricao?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card className="p-6">
+      <p className="text-sm font-semibold text-[#2B2420]">{titulo}</p>
+      {descricao && <p className="mt-0.5 text-xs text-[#8C7A6B]">{descricao}</p>}
+      <div className="mt-5 space-y-4">{children}</div>
+    </Card>
+  );
+}
 
 function Formulario() {
   const { slug: slugEdicao } = useParams<{ slug?: string }>();
@@ -66,8 +86,6 @@ function Formulario() {
   );
   const [erro, setErro] = useState<string | null>(null);
 
-  // produtoExistente chega de forma assíncrona (query) — popula o form
-  // quando os dados finalmente carregarem, em vez de só no primeiro render.
   useEffect(() => {
     if (!produtoExistente) return;
     setNome(produtoExistente.nome);
@@ -112,8 +130,6 @@ function Formulario() {
       setErro(null);
     }
 
-    // Envia uma de cada vez (em série), pra manter a ordem e não estourar
-    // limite de requisições simultâneas no Cloudinary.
     for (let i = 0; i < paraEnviar.length; i++) {
       setProgressoUpload({ atual: i + 1, total: paraEnviar.length });
       await handleUploadImagem(paraEnviar[i]);
@@ -195,180 +211,188 @@ function Formulario() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
-      <Link href="/admin/produtos" className="text-sm text-marrom hover:text-terracota">
-        ‹ Voltar aos produtos
-      </Link>
-      <p className="mt-3 eyebrow text-marrom/60">Admin</p>
-      <h1 className="mt-1 font-serif text-2xl text-marrom-escuro">
-        {editando ? "Editar peça" : "Nova peça"}
-      </h1>
-
-      <div className="mt-8 flex flex-col gap-5">
-        <div>
-          <label className="text-sm text-marrom">Nome</label>
-          <input
-            value={nome}
-            onChange={(e) => {
-              setNome(e.target.value);
-              if (!slugEditadoManualmente) setSlug(gerarSlug(e.target.value));
-            }}
-            className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm text-marrom">Slug (URL da peça)</label>
-          <input
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setSlugEditadoManualmente(true);
-            }}
-            className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 font-mono text-sm text-marrom-escuro"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm text-marrom">Categoria</label>
-          <select
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value as Categoria)}
-            className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-          >
-            {CATEGORIAS.map((c) => (
-              <option key={c.valor} value={c.valor}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="text-sm text-marrom">Descrição</label>
-          <textarea
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-            rows={3}
-            className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-          />
-        </div>
-
-        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
-          <input
-            type="checkbox"
-            checked={precoSobConsulta}
-            onChange={(e) => setPrecoSobConsulta(e.target.checked)}
-          />
-          Preço sob consulta (não mostra valor fixo na vitrine)
-        </label>
-
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="text-sm text-marrom">
-              Preço base (R$){precoSobConsulta && " — opcional, uso interno"}
-            </label>
-            <input
-              value={precoBase}
-              onChange={(e) => setPrecoBase(e.target.value)}
-              placeholder="74.00"
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-sm text-marrom">Prazo de produção (dias)</label>
-            <input
-              type="number"
-              min={1}
-              value={prazoProducaoDias}
-              onChange={(e) => setPrazoProducaoDias(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-            />
-          </div>
-        </div>
-
-        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
-          <input
-            type="checkbox"
-            checked={controlarEstoque}
-            onChange={(e) => setControlarEstoque(e.target.checked)}
-          />
-          Controlar estoque (desmarcado = sob encomenda, sem limite fixo)
-        </label>
-
-        {controlarEstoque && (
-          <div className="max-w-[10rem]">
-            <label className="text-sm text-marrom">Peças em estoque</label>
-            <input
-              type="number"
-              min={0}
-              value={estoque}
-              onChange={(e) => setEstoque(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-            />
-          </div>
+    <AdminLayout
+      titulo={editando ? "Editar peça" : "Nova peça"}
+      acoes={
+        <>
+          <Botao variante="secundario" onClick={() => navegar("/admin/produtos")}>
+            Cancelar
+          </Botao>
+          <Botao variante="primario" onClick={salvar} disabled={salvando || enviandoImagem}>
+            {salvando ? "Salvando…" : "Salvar peça"}
+          </Botao>
+        </>
+      }
+    >
+      <div className="mx-auto max-w-2xl space-y-6">
+        {erro && (
+          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{erro}</p>
         )}
 
-        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
-          <input
-            type="checkbox"
-            checked={personalizavel}
-            onChange={(e) => setPersonalizavel(e.target.checked)}
-          />
-          Personalizável
-        </label>
+        <Secao titulo="Informações básicas">
+          <div>
+            <Label>Nome</Label>
+            <input
+              value={nome}
+              onChange={(e) => {
+                setNome(e.target.value);
+                if (!slugEditadoManualmente) setSlug(gerarSlug(e.target.value));
+              }}
+              className={campoBase}
+            />
+          </div>
 
-        {personalizavel && (
+          <div>
+            <Label>Slug (URL da peça)</Label>
+            <input
+              value={slug}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                setSlugEditadoManualmente(true);
+              }}
+              className={`${campoBase} font-mono`}
+            />
+          </div>
+
+          <div>
+            <Label>Categoria</Label>
+            <select
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value as Categoria)}
+              className={campoBase}
+            >
+              {CATEGORIAS.map((c) => (
+                <option key={c.valor} value={c.valor}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <Label>Descrição</Label>
+            <textarea
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              rows={3}
+              className={campoBase}
+            />
+          </div>
+        </Secao>
+
+        <Secao titulo="Preço e produção">
+          <label className="flex items-center gap-2.5 text-sm text-[#2B2420]">
+            <input
+              type="checkbox"
+              checked={precoSobConsulta}
+              onChange={(e) => setPrecoSobConsulta(e.target.checked)}
+            />
+            Preço sob consulta (não mostra valor fixo na vitrine)
+          </label>
+
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="text-sm text-marrom">Tipo de personalização</label>
-              <select
-                value={tipoPersonalizacao}
-                onChange={(e) => setTipoPersonalizacao(e.target.value as TipoPersonalizacao)}
-                className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-              >
-                <option value="carimbo">Carimbo</option>
-                <option value="decalque">Decalque</option>
-              </select>
+              <Label>Preço base (R$){precoSobConsulta && " — opcional"}</Label>
+              <input
+                value={precoBase}
+                onChange={(e) => setPrecoBase(e.target.value)}
+                placeholder="74.00"
+                className={campoBase}
+              />
             </div>
             <div className="flex-1">
-              <label className="text-sm text-marrom">Custo da personalização (R$)</label>
+              <Label>Prazo de produção (dias)</Label>
               <input
-                value={custoPersonalizacao}
-                onChange={(e) => setCustoPersonalizacao(e.target.value)}
-                placeholder="50.00"
-                className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
+                type="number"
+                min={1}
+                value={prazoProducaoDias}
+                onChange={(e) => setPrazoProducaoDias(Number(e.target.value))}
+                className={campoBase}
               />
             </div>
           </div>
-        )}
 
-        <div>
-          <label className="text-sm text-marrom">Observação artesanal (opcional)</label>
-          <textarea
-            value={observacaoArtesanal}
-            onChange={(e) => setObservacaoArtesanal(e.target.value)}
-            rows={2}
-            placeholder="Ex: pequenas variações de tom são esperadas nesta peça."
-            className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-          />
-        </div>
+          <div>
+            <Label>Observação artesanal (opcional)</Label>
+            <textarea
+              value={observacaoArtesanal}
+              onChange={(e) => setObservacaoArtesanal(e.target.value)}
+              rows={2}
+              placeholder="Ex: pequenas variações de tom são esperadas nesta peça."
+              className={campoBase}
+            />
+          </div>
+        </Secao>
 
-        <div>
-          <label className="text-sm text-marrom">
-            Imagens{" "}
-            <span className="text-marrom/50">
-              ({imagens.length}/{LIMITE_IMAGENS})
-            </span>
+        <Secao titulo="Estoque">
+          <label className="flex items-center gap-2.5 text-sm text-[#2B2420]">
+            <input
+              type="checkbox"
+              checked={controlarEstoque}
+              onChange={(e) => setControlarEstoque(e.target.checked)}
+            />
+            Controlar estoque (desmarcado = sob encomenda, sem limite fixo)
           </label>
-          <div className="mt-2 flex flex-wrap gap-3">
+
+          {controlarEstoque && (
+            <div className="max-w-[10rem]">
+              <Label>Peças em estoque</Label>
+              <input
+                type="number"
+                min={0}
+                value={estoque}
+                onChange={(e) => setEstoque(Number(e.target.value))}
+                className={campoBase}
+              />
+            </div>
+          )}
+        </Secao>
+
+        <Secao titulo="Personalização">
+          <label className="flex items-center gap-2.5 text-sm text-[#2B2420]">
+            <input
+              type="checkbox"
+              checked={personalizavel}
+              onChange={(e) => setPersonalizavel(e.target.checked)}
+            />
+            Esta peça é personalizável
+          </label>
+
+          {personalizavel && (
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Label>Tipo</Label>
+                <select
+                  value={tipoPersonalizacao}
+                  onChange={(e) => setTipoPersonalizacao(e.target.value as TipoPersonalizacao)}
+                  className={campoBase}
+                >
+                  <option value="carimbo">Carimbo</option>
+                  <option value="decalque">Decalque</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <Label>Custo (R$)</Label>
+                <input
+                  value={custoPersonalizacao}
+                  onChange={(e) => setCustoPersonalizacao(e.target.value)}
+                  placeholder="50.00"
+                  className={campoBase}
+                />
+              </div>
+            </div>
+          )}
+        </Secao>
+
+        <Secao titulo="Imagens" descricao={`${imagens.length}/${LIMITE_IMAGENS} usadas`}>
+          <div className="flex flex-wrap gap-3">
             {imagens.map((url) => (
-              <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg bg-borda/30">
+              <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg border border-black/5">
                 <img src={url} alt="" className="h-full w-full object-cover" />
                 <button
                   type="button"
                   onClick={() => removerImagem(url)}
-                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-carvao/70 text-xs text-white"
+                  className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white"
                   aria-label="Remover imagem"
                 >
                   ×
@@ -377,31 +401,33 @@ function Formulario() {
             ))}
 
             {imagens.length < LIMITE_IMAGENS && (
-            <label className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-borda text-center text-xs text-marrom hover:border-terracota">
-              {progressoUpload
-                ? `Enviando ${progressoUpload.atual}/${progressoUpload.total}…`
-                : "+ Imagens"}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                disabled={enviandoImagem}
-                onChange={(e) => {
-                  const arquivos = e.target.files;
-                  if (arquivos && arquivos.length > 0) handleUploadImagens(arquivos);
-                  e.target.value = "";
-                }}
-              />
-            </label>
+              <label className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-black/10 text-center text-xs text-[#8C7A6B] hover:border-terracota">
+                {progressoUpload
+                  ? `Enviando ${progressoUpload.atual}/${progressoUpload.total}…`
+                  : "+ Imagens"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  disabled={enviandoImagem}
+                  onChange={(e) => {
+                    const arquivos = e.target.files;
+                    if (arquivos && arquivos.length > 0) handleUploadImagens(arquivos);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
             )}
           </div>
-        </div>
+        </Secao>
 
-        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
-          <input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} />
-          Ativo (visível no catálogo)
-        </label>
+        <Secao titulo="Visibilidade">
+          <label className="flex items-center gap-2.5 text-sm text-[#2B2420]">
+            <input type="checkbox" checked={ativo} onChange={(e) => setAtivo(e.target.checked)} />
+            Ativo (visível no catálogo)
+          </label>
+        </Secao>
 
         {editando && produtoExistente ? (
           <GerenciarVariantes
@@ -410,30 +436,12 @@ function Formulario() {
             variantesCor={produtoExistente.variantesCor}
           />
         ) : (
-          <p className="rounded-lg border border-dashed border-borda p-4 text-sm text-marrom">
+          <Card className="border-dashed p-5 text-sm text-[#8C7A6B]">
             Salve a peça primeiro pra poder cadastrar as cores de argila e esmalte.
-          </p>
+          </Card>
         )}
-
-        {erro && <p className="text-sm text-red-700">{erro}</p>}
-
-        <div className="mt-4 flex gap-3">
-          <button
-            onClick={salvar}
-            disabled={salvando || enviandoImagem}
-            className="rounded-full bg-marrom-escuro px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26] disabled:opacity-50"
-          >
-            {salvando ? "Salvando…" : "Salvar peça"}
-          </button>
-          <button
-            onClick={() => navegar("/admin/produtos")}
-            className="rounded-full border border-borda px-6 py-3 text-sm text-marrom-escuro"
-          >
-            Cancelar
-          </button>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

@@ -1,8 +1,19 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "wouter";
+import { useEffect, useState, type ReactNode } from "react";
+import { useParams } from "wouter";
 import { trpc } from "../../lib/trpc";
 import { STATUS_PEDIDO, labelStatusPedido, corStatusPedido } from "@shared/const";
 import AdminGuard from "./AdminGuard";
+import AdminLayout from "./AdminLayout";
+import { Card, Badge, Label, campoBase } from "./AdminUI";
+
+function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    <Card className="p-5">
+      <p className="text-xs font-medium uppercase tracking-wide text-[#8C7A6B]">{titulo}</p>
+      <div className="mt-3">{children}</div>
+    </Card>
+  );
+}
 
 function Detalhe() {
   const { codigo } = useParams<{ codigo: string }>();
@@ -26,8 +37,18 @@ function Detalhe() {
     onSuccess: () => utils.pedidos.buscarPorCodigo.invalidate({ codigoPedido: codigo }),
   });
 
-  if (isLoading) return <div className="p-10 text-center text-marrom">Carregando…</div>;
-  if (!pedido) return <div className="p-10 text-center text-marrom">Pedido não encontrado.</div>;
+  if (isLoading)
+    return (
+      <AdminLayout titulo="Pedido">
+        <p className="text-sm text-[#8C7A6B]">Carregando…</p>
+      </AdminLayout>
+    );
+  if (!pedido)
+    return (
+      <AdminLayout titulo="Pedido">
+        <p className="text-sm text-[#8C7A6B]">Pedido não encontrado.</p>
+      </AdminLayout>
+    );
 
   const endereco = pedido.enderecoEntrega;
 
@@ -36,177 +57,171 @@ function Detalhe() {
     atualizarStatus.mutate({
       codigoPedido: pedido.codigoPedido,
       status: novoStatus as typeof pedido.status,
-      // Só manda transportadora/rastreio quando o usuário preencheu algo
-      // (evita apagar valor já salvo ao trocar pra outro status sem querer)
       ...(transportadora.trim() && { transportadora: transportadora.trim() }),
       ...(codigoRastreio.trim() && { codigoRastreio: codigoRastreio.trim() }),
     });
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
-      <Link href="/admin/pedidos" className="text-sm text-marrom hover:text-terracota">
-        ‹ Voltar aos pedidos
-      </Link>
-
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-        <h1 className="font-serif text-2xl text-marrom-escuro">
-          Pedido <span className="font-mono">{pedido.codigoPedido}</span>
-        </h1>
-        <span
-          className={`rounded-full px-3 py-1 text-sm font-medium ${corStatusPedido(pedido.status)}`}
-        >
-          {labelStatusPedido(pedido.status)}
-        </span>
-      </div>
-
-      <div className="mt-6 space-y-3">
-        <div>
-          <label className="text-sm text-marrom">Atualizar status</label>
-          <select
-            value={pedido.status}
-            onChange={(e) => mudarStatus(e.target.value)}
-            disabled={atualizarStatus.isPending}
-            className="mt-1 block w-full max-w-xs rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-          >
-            {STATUS_PEDIDO.map((s) => (
-              <option key={s.valor} value={s.valor}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex max-w-md gap-3">
-          <div className="flex-1">
-            <label className="text-sm text-marrom">Transportadora</label>
-            <input
-              value={transportadora}
-              onChange={(e) => setTransportadora(e.target.value)}
-              placeholder="Ex: Jadlog, Correios"
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-3 py-2 text-sm text-marrom-escuro"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-sm text-marrom">Código de rastreio</label>
-            <input
-              value={codigoRastreio}
-              onChange={(e) => setCodigoRastreio(e.target.value)}
-              placeholder="Ex: JD123456789BR"
-              className="mt-1 w-full rounded-lg border border-borda bg-creme px-3 py-2 text-sm text-marrom-escuro"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-marrom">
-          Preenche transportadora e código antes de mudar o status pra "Enviado" —
-          o e-mail automático pro cliente já sai com esses dados.
-        </p>
-      </div>
-
-      <div className="mt-8 grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg border border-borda p-4">
-          <p className="eyebrow text-marrom/60">Cliente</p>
-          <p className="mt-2 text-marrom-escuro">{pedido.clienteNome}</p>
-          <p className="text-sm text-marrom">{pedido.clienteEmail}</p>
-          <p className="text-sm text-marrom">{pedido.clienteTelefone}</p>
-          <p className="text-sm text-marrom">{pedido.clienteDocumento}</p>
-        </div>
-
-        <div className="rounded-lg border border-borda p-4">
-          <p className="eyebrow text-marrom/60">Endereço de entrega</p>
-          {endereco ? (
-            <p className="mt-2 text-sm text-marrom-escuro">
-              {endereco.logradouro}, {endereco.numero}
-              {endereco.complemento && ` — ${endereco.complemento}`}
-              <br />
-              {endereco.bairro} — {endereco.cidade}/{endereco.uf}
-              <br />
-              CEP {endereco.cep}
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-marrom">Não informado.</p>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-lg border border-borda p-4">
-        <p className="eyebrow text-marrom/60">Pagamento</p>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-marrom-escuro sm:grid-cols-4">
-          <p>Subtotal: R$ {Number(pedido.subtotal).toFixed(2).replace(".", ",")}</p>
-          <p>Frete: R$ {Number(pedido.frete ?? 0).toFixed(2).replace(".", ",")}</p>
-          <p className="font-medium">
-            Total: R$ {Number(pedido.total).toFixed(2).replace(".", ",")}
-          </p>
-          <p className="capitalize">Gateway: {pedido.gateway}</p>
-        </div>
-      </div>
-
-      <div className="mt-8">
-        <p className="eyebrow text-marrom/60">Itens do pedido</p>
-        <div className="mt-3 space-y-3">
-          {pedido.itens.map((item) => (
-            <div key={item.id} className="flex gap-4 rounded-lg border border-borda p-4">
-              {item.produto.imagens?.[0] && (
-                <img
-                  src={item.produto.imagens[0]}
-                  alt=""
-                  className="h-16 w-16 rounded-lg object-cover"
-                />
-              )}
-              <div className="flex-1">
-                <p className="text-marrom-escuro">
-                  {item.quantidade}× {item.produto.nome}
-                </p>
-                {(item.varianteCor || item.varianteArgila) && (
-                  <p className="text-xs text-marrom">
-                    {item.varianteArgila && `Argila: ${item.varianteArgila.nome}`}
-                    {item.varianteArgila && item.varianteCor && " · "}
-                    {item.varianteCor && `Esmalte: ${item.varianteCor.nome}`}
-                  </p>
-                )}
-                {item.personalizado && (
-                  <div className="mt-1 rounded bg-terracota/10 p-2 text-xs text-marrom-escuro">
-                    <p className="font-medium">Personalizado</p>
-                    {item.textoCarimbo && <p>Texto: {item.textoCarimbo}</p>}
-                    {item.arteCarimboUrl && (
-                      <a
-                        href={item.arteCarimboUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-terracota underline"
-                      >
-                        Ver arte enviada
-                      </a>
+    <AdminLayout
+      titulo={`Pedido ${pedido.codigoPedido}`}
+      acoes={<Badge cor={corStatusPedido(pedido.status)}>{labelStatusPedido(pedido.status)}</Badge>}
+    >
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <Secao titulo="Itens do pedido">
+            <div className="space-y-3">
+              {pedido.itens.map((item) => (
+                <div key={item.id} className="flex gap-4 border-b border-black/5 pb-3 last:border-0 last:pb-0">
+                  {item.produto.imagens?.[0] && (
+                    <img
+                      src={item.produto.imagens[0]}
+                      alt=""
+                      className="h-14 w-14 flex-shrink-0 rounded-lg object-cover"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-[#2B2420]">
+                      {item.quantidade}× {item.produto.nome}
+                    </p>
+                    {(item.varianteCor || item.varianteArgila) && (
+                      <p className="mt-0.5 text-xs text-[#8C7A6B]">
+                        {item.varianteArgila && `Argila: ${item.varianteArgila.nome}`}
+                        {item.varianteArgila && item.varianteCor && " · "}
+                        {item.varianteCor && `Esmalte: ${item.varianteCor.nome}`}
+                      </p>
                     )}
-                    {item.observacoesCliente && <p>Obs: {item.observacoesCliente}</p>}
+                    {item.personalizado && (
+                      <div className="mt-2 rounded-lg bg-terracota/[0.06] p-2.5 text-xs text-[#2B2420]">
+                        <p className="font-medium">Personalizado</p>
+                        {item.textoCarimbo && <p>Texto: {item.textoCarimbo}</p>}
+                        {item.arteCarimboUrl && (
+                          <a
+                            href={item.arteCarimboUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-terracota underline"
+                          >
+                            Ver arte enviada
+                          </a>
+                        )}
+                        {item.observacoesCliente && <p>Obs: {item.observacoesCliente}</p>}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <p className="text-marrom-escuro">
-                R$ {Number(item.precoUnitario).toFixed(2).replace(".", ",")}
-              </p>
+                  <p className="flex-shrink-0 text-sm text-[#2B2420]">
+                    R$ {Number(item.precoUnitario).toFixed(2).replace(".", ",")}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </Secao>
 
-      <div className="mt-8">
-        <p className="eyebrow text-marrom/60">Linha do tempo</p>
-        <div className="mt-3 space-y-3 border-l-2 border-borda pl-4">
-          {pedido.eventos.map((evento) => (
-            <div key={evento.id}>
-              <p className="text-sm font-medium text-marrom-escuro">
-                {labelStatusPedido(evento.status)}
+          <Secao titulo="Linha do tempo">
+            <div className="space-y-4 border-l-2 border-black/10 pl-4">
+              {pedido.eventos.map((evento) => (
+                <div key={evento.id}>
+                  <p className="text-sm font-medium text-[#2B2420]">
+                    {labelStatusPedido(evento.status)}
+                  </p>
+                  {evento.descricao && (
+                    <p className="text-xs text-[#8C7A6B]">{evento.descricao}</p>
+                  )}
+                  <p className="text-xs text-[#8C7A6B]/70">
+                    {new Date(evento.criadoEm).toLocaleString("pt-BR")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Secao>
+        </div>
+
+        <div className="space-y-6">
+          <Secao titulo="Atualizar status">
+            <select
+              value={pedido.status}
+              onChange={(e) => mudarStatus(e.target.value)}
+              disabled={atualizarStatus.isPending}
+              className={campoBase}
+            >
+              {STATUS_PEDIDO.map((s) => (
+                <option key={s.valor} value={s.valor}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <Label>Transportadora</Label>
+                <input
+                  value={transportadora}
+                  onChange={(e) => setTransportadora(e.target.value)}
+                  placeholder="Ex: Jadlog, Correios"
+                  className={campoBase}
+                />
+              </div>
+              <div>
+                <Label>Código de rastreio</Label>
+                <input
+                  value={codigoRastreio}
+                  onChange={(e) => setCodigoRastreio(e.target.value)}
+                  placeholder="Ex: JD123456789BR"
+                  className={campoBase}
+                />
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-[#8C7A6B]">
+              Preenche transportadora e código antes de mudar pra "Enviado" — o
+              e-mail automático pro cliente já sai com esses dados.
+            </p>
+          </Secao>
+
+          <Secao titulo="Cliente">
+            <p className="text-sm font-medium text-[#2B2420]">{pedido.clienteNome}</p>
+            <p className="mt-1 text-sm text-[#6b6459]">{pedido.clienteEmail}</p>
+            <p className="text-sm text-[#6b6459]">{pedido.clienteTelefone}</p>
+            <p className="text-sm text-[#6b6459]">{pedido.clienteDocumento}</p>
+          </Secao>
+
+          <Secao titulo="Endereço de entrega">
+            {endereco ? (
+              <p className="text-sm text-[#2B2420]">
+                {endereco.logradouro}, {endereco.numero}
+                {endereco.complemento && ` — ${endereco.complemento}`}
+                <br />
+                {endereco.bairro} — {endereco.cidade}/{endereco.uf}
+                <br />
+                CEP {endereco.cep}
               </p>
-              {evento.descricao && <p className="text-xs text-marrom">{evento.descricao}</p>}
-              <p className="text-xs text-marrom/60">
-                {new Date(evento.criadoEm).toLocaleString("pt-BR")}
+            ) : (
+              <p className="text-sm text-[#8C7A6B]">Não informado.</p>
+            )}
+          </Secao>
+
+          <Secao titulo="Pagamento">
+            <div className="space-y-1.5 text-sm text-[#2B2420]">
+              <p className="flex justify-between">
+                <span className="text-[#8C7A6B]">Subtotal</span>
+                <span>R$ {Number(pedido.subtotal).toFixed(2).replace(".", ",")}</span>
+              </p>
+              <p className="flex justify-between">
+                <span className="text-[#8C7A6B]">Frete</span>
+                <span>R$ {Number(pedido.frete ?? 0).toFixed(2).replace(".", ",")}</span>
+              </p>
+              <p className="flex justify-between border-t border-black/5 pt-1.5 font-medium">
+                <span>Total</span>
+                <span>R$ {Number(pedido.total).toFixed(2).replace(".", ",")}</span>
+              </p>
+              <p className="flex justify-between pt-1 text-xs text-[#8C7A6B]">
+                <span>Gateway</span>
+                <span className="capitalize">{pedido.gateway}</span>
               </p>
             </div>
-          ))}
+          </Secao>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

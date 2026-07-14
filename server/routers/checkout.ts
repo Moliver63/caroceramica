@@ -10,11 +10,12 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, sql, inArray, and, gte } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { pedidos, itensPedido } from "../../shared/schema";
+import { pedidos, itensPedido, pedidoEventos, produtos } from "../../shared/schema";
 import { buscarOuCriarCliente, criarCobranca, buscarQrCodePix } from "../lib/asaas";
+import { enviarEmail, emailPedidoRecebido } from "../lib/email";
 import { calcularPorCep } from "./frete";
 import { publicProcedure, router } from "../_core/trpc";
 
@@ -79,6 +80,24 @@ export const checkoutRouter = router({
       // Custo de personalização já embutido no precoUnitario enviado pelo client.
       const custoPersonalizacaoTotal = 0;
 
+      // ── Checagem de estoque — só considera produtos com
+      // controlarEstoque=true (peças sob encomenda/personalizadas ficam
+      // de fora, não têm estoque fixo) ──
+      const idsProdutos = input.itens.map((i) => i.produtoId);
+      const produtosDoCarrinho = await db.query.produtos.findMany({
+        where: inArray(produtos.id, idsProdutos),
+      });
+
+      for (const item of input.itens) {
+        const produto = produtosDoCarrinho.find((p) => p.id === item.produtoId);
+        if (produto?.controlarEstoque && produto.estoque < item.quantidade) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Só temos ${produto.estoque} unidade(s) de "${produto.nome}" em estoque no momento.`,
+          });
+        }
+      }
+
       const freteCalculado = calcularPorCep(input.enderecoEntrega.cep);
       const valorFrete = freteCalculado?.valor ?? 0;
       const total = subtotal + valorFrete;
@@ -126,6 +145,43 @@ export const checkoutRouter = router({
             : ("nao_aplicavel" as const),
         }))
       );
+
+      // Decremento atômico — o WHERE com estoque >= quantidade evita
+      // ficar negativo mesmo em pedidos concorrentes na mesma peça.
+      for (const item of input.itens) {
+        await db
+          .update(produtos)
+          .set({ estoque: sql`${produtos.estoque} - ${item.quantidade}` })
+          .where(
+            and(
+              eq(produtos.id, item.produtoId),
+              eq(produtos.controlarEstoque, true),
+              gte(produtos.estoque, item.quantidade)
+            )
+          );
+      }
+
+      await db.insert(pedidoEventos).values({
+        pedidoId: pedido.id,
+        status: "aguardando_pagamento",
+        descricao: "Pedido recebido, aguardando confirmação de pagamento.",
+      });
+
+      // Prazo de produção — usa o maior prazo entre os produtos do carrinho.
+      const prazoProducaoDias = Math.max(
+        ...produtosDoCarrinho.map((p) => p.prazoProducaoDias),
+        30
+      );
+
+      await enviarEmail({
+        para: input.cliente.email,
+        assunto: `Pedido ${codigoPedido} recebido — Caro Vargas Cerâmica`,
+        html: emailPedidoRecebido({
+          nomeCliente: input.cliente.nome,
+          codigoPedido,
+          prazoProducaoDias,
+        }),
+      });
 
       // Integração Asaas — se falhar, o pedido já foi registrado como
       // "aguardando_pagamento" no banco; o erro é reportado ao cliente

@@ -25,12 +25,20 @@ export default function PedidoConfirmado() {
           manter avisado por e-mail a cada etapa.
         </p>
 
-        <Link
-          href="/"
-          className="mt-8 inline-block rounded-full bg-marrom-escuro px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26]"
-        >
-          Continuar comprando
-        </Link>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <Link
+            href="/rastreio"
+            className="rounded-full border border-marrom-escuro px-7 py-3 text-sm font-semibold text-marrom-escuro transition hover:bg-borda/30"
+          >
+            Rastrear meu pedido
+          </Link>
+          <Link
+            href="/"
+            className="rounded-full bg-marrom-escuro px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#3a2e26]"
+          >
+            Continuar comprando
+          </Link>
+        </div>
       </div>
 
       <Footer />

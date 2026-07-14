@@ -2,7 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { pedidos } from "../../shared/schema";
+import { pedidos, pedidoEventos } from "../../shared/schema";
+import { enviarEmail, emailPedidoEnviado } from "../lib/email";
 import { adminProcedure, router } from "../_core/trpc";
 
 const statusValidos = [
@@ -37,6 +38,7 @@ export const pedidosRouter = router({
               varianteArgila: true,
             },
           },
+          eventos: { orderBy: (e, { desc }) => desc(e.criadoEm) },
         },
       });
 
@@ -53,17 +55,44 @@ export const pedidosRouter = router({
       z.object({
         codigoPedido: z.string(),
         status: z.enum(statusValidos),
+        transportadora: z.string().optional(),
+        codigoRastreio: z.string().optional(),
+        descricaoEvento: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
       const [atualizado] = await db
         .update(pedidos)
-        .set({ status: input.status, atualizadoEm: new Date() })
+        .set({
+          status: input.status,
+          atualizadoEm: new Date(),
+          ...(input.transportadora !== undefined && { transportadora: input.transportadora }),
+          ...(input.codigoRastreio !== undefined && { codigoRastreio: input.codigoRastreio }),
+        })
         .where(eq(pedidos.codigoPedido, input.codigoPedido))
         .returning();
 
       if (!atualizado) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Pedido não encontrado" });
+      }
+
+      await db.insert(pedidoEventos).values({
+        pedidoId: atualizado.id,
+        status: input.status,
+        descricao: input.descricaoEvento,
+      });
+
+      if (input.status === "enviado") {
+        await enviarEmail({
+          para: atualizado.clienteEmail,
+          assunto: `Pedido ${atualizado.codigoPedido} enviado — Caro Vargas Cerâmica`,
+          html: emailPedidoEnviado({
+            nomeCliente: atualizado.clienteNome,
+            codigoPedido: atualizado.codigoPedido,
+            transportadora: atualizado.transportadora,
+            codigoRastreio: atualizado.codigoRastreio,
+          }),
+        });
       }
 
       return atualizado;

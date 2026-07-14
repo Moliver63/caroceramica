@@ -77,6 +77,12 @@ export const produtos = pgTable("produtos", {
   // Quando true, esconde precoBase na vitrine e mostra "Sob consulta"
   precoSobConsulta: boolean("preco_sob_consulta").notNull().default(false),
 
+  // Estoque — só é levado em conta quando controlarEstoque=true (faz
+  // sentido pra "Pronta Entrega"; peças sob encomenda/personalizadas
+  // normalmente não têm estoque fixo, então ficam de fora do controle)
+  controlarEstoque: boolean("controlar_estoque").notNull().default(false),
+  estoque: integer("estoque").notNull().default(0),
+
   // Kit (ex: prato oval + amassadinho P)
   ehKit: boolean("eh_kit").notNull().default(false),
 
@@ -202,6 +208,10 @@ export const pedidos = pgTable("pedidos", {
 
   prazoProducaoEstimado: timestamp("prazo_producao_estimado"),
 
+  // Rastreio — preenchido pelo admin quando o pedido é despachado
+  transportadora: varchar("transportadora", { length: 60 }),
+  codigoRastreio: varchar("codigo_rastreio", { length: 60 }),
+
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
   atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
 });
@@ -230,6 +240,7 @@ export const itensPedido = pgTable("itens_pedido", {
 
 export const pedidosRelations = relations(pedidos, ({ many }) => ({
   itens: many(itensPedido),
+  eventos: many(pedidoEventos),
 }));
 
 export const itensPedidoRelations = relations(itensPedido, ({ one }) => ({
@@ -248,6 +259,25 @@ export const itensPedidoRelations = relations(itensPedido, ({ one }) => ({
   varianteArgila: one(variantesArgila, {
     fields: [itensPedido.varianteArgilaId],
     references: [variantesArgila.id],
+  }),
+}));
+
+// Linha do tempo de um pedido — um evento por mudança de status,
+// usado tanto pela página pública de rastreio quanto pelo admin.
+export const pedidoEventos = pgTable("pedido_eventos", {
+  id: serial("id").primaryKey(),
+  pedidoId: integer("pedido_id")
+    .notNull()
+    .references(() => pedidos.id, { onDelete: "cascade" }),
+  status: statusPedidoEnum("status").notNull(),
+  descricao: text("descricao"),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});
+
+export const pedidoEventosRelations = relations(pedidoEventos, ({ one }) => ({
+  pedido: one(pedidos, {
+    fields: [pedidoEventos.pedidoId],
+    references: [pedidos.id],
   }),
 }));
 

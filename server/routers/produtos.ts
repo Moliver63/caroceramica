@@ -77,6 +77,8 @@ export const produtosRouter = router({
         tipoPersonalizacao: tipoPersonalizacaoSchema.optional(),
         custoPersonalizacao: z.string().optional(),
         precoSobConsulta: z.boolean().default(false),
+        controlarEstoque: z.boolean().default(false),
+        estoque: z.number().int().min(0).default(0),
         ehKit: z.boolean().default(false),
         prazoProducaoDias: z.number().int().positive().default(30),
         observacaoArtesanal: z.string().optional(),

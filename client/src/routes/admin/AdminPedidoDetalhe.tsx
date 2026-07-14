@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { trpc } from "../../lib/trpc";
 import { STATUS_PEDIDO, labelStatusPedido, corStatusPedido } from "@shared/const";
@@ -12,6 +13,15 @@ function Detalhe() {
     { enabled: !!codigo }
   );
 
+  const [transportadora, setTransportadora] = useState("");
+  const [codigoRastreio, setCodigoRastreio] = useState("");
+
+  useEffect(() => {
+    if (!pedido) return;
+    setTransportadora(pedido.transportadora ?? "");
+    setCodigoRastreio(pedido.codigoRastreio ?? "");
+  }, [pedido]);
+
   const atualizarStatus = trpc.pedidos.atualizarStatus.useMutation({
     onSuccess: () => utils.pedidos.buscarPorCodigo.invalidate({ codigoPedido: codigo }),
   });
@@ -20,6 +30,18 @@ function Detalhe() {
   if (!pedido) return <div className="p-10 text-center text-marrom">Pedido não encontrado.</div>;
 
   const endereco = pedido.enderecoEntrega;
+
+  function mudarStatus(novoStatus: string) {
+    if (!pedido) return;
+    atualizarStatus.mutate({
+      codigoPedido: pedido.codigoPedido,
+      status: novoStatus as typeof pedido.status,
+      // Só manda transportadora/rastreio quando o usuário preencheu algo
+      // (evita apagar valor já salvo ao trocar pra outro status sem querer)
+      ...(transportadora.trim() && { transportadora: transportadora.trim() }),
+      ...(codigoRastreio.trim() && { codigoRastreio: codigoRastreio.trim() }),
+    });
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
@@ -38,22 +60,47 @@ function Detalhe() {
         </span>
       </div>
 
-      <div className="mt-6">
-        <label className="text-sm text-marrom">Atualizar status</label>
-        <select
-          value={pedido.status}
-          onChange={(e) =>
-            atualizarStatus.mutate({ codigoPedido: pedido.codigoPedido, status: e.target.value as typeof pedido.status })
-          }
-          disabled={atualizarStatus.isPending}
-          className="mt-1 block w-full max-w-xs rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
-        >
-          {STATUS_PEDIDO.map((s) => (
-            <option key={s.valor} value={s.valor}>
-              {s.label}
-            </option>
-          ))}
-        </select>
+      <div className="mt-6 space-y-3">
+        <div>
+          <label className="text-sm text-marrom">Atualizar status</label>
+          <select
+            value={pedido.status}
+            onChange={(e) => mudarStatus(e.target.value)}
+            disabled={atualizarStatus.isPending}
+            className="mt-1 block w-full max-w-xs rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
+          >
+            {STATUS_PEDIDO.map((s) => (
+              <option key={s.valor} value={s.valor}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex max-w-md gap-3">
+          <div className="flex-1">
+            <label className="text-sm text-marrom">Transportadora</label>
+            <input
+              value={transportadora}
+              onChange={(e) => setTransportadora(e.target.value)}
+              placeholder="Ex: Jadlog, Correios"
+              className="mt-1 w-full rounded-lg border border-borda bg-creme px-3 py-2 text-sm text-marrom-escuro"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-sm text-marrom">Código de rastreio</label>
+            <input
+              value={codigoRastreio}
+              onChange={(e) => setCodigoRastreio(e.target.value)}
+              placeholder="Ex: JD123456789BR"
+              className="mt-1 w-full rounded-lg border border-borda bg-creme px-3 py-2 text-sm text-marrom-escuro"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-marrom">
+          Preenche transportadora e código antes de mudar o status pra "Enviado" —
+          o e-mail automático pro cliente já sai com esses dados.
+        </p>
       </div>
 
       <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -137,6 +184,23 @@ function Detalhe() {
               </div>
               <p className="text-marrom-escuro">
                 R$ {Number(item.precoUnitario).toFixed(2).replace(".", ",")}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <p className="eyebrow text-marrom/60">Linha do tempo</p>
+        <div className="mt-3 space-y-3 border-l-2 border-borda pl-4">
+          {pedido.eventos.map((evento) => (
+            <div key={evento.id}>
+              <p className="text-sm font-medium text-marrom-escuro">
+                {labelStatusPedido(evento.status)}
+              </p>
+              {evento.descricao && <p className="text-xs text-marrom">{evento.descricao}</p>}
+              <p className="text-xs text-marrom/60">
+                {new Date(evento.criadoEm).toLocaleString("pt-BR")}
               </p>
             </div>
           ))}

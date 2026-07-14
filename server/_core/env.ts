@@ -11,4 +11,7 @@ export const ENV = {
 
   cloudflareAccountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? "",
   cloudflareApiToken: process.env.CLOUDFLARE_API_TOKEN ?? "",
+
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  emailRemetente: process.env.EMAIL_REMETENTE ?? "Caro Vargas Cerâmica <pedidos@carovargas.com.br>",
 };

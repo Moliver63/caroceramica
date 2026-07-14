@@ -24,6 +24,17 @@ export default function ProdutoCard({ produto }: { produto: Produto }) {
           </span>
         )}
 
+        {produto.controlarEstoque && produto.estoque === 0 && (
+          <span className="absolute right-3 top-3 rounded-full bg-carvao/80 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-creme">
+            Esgotado
+          </span>
+        )}
+        {produto.controlarEstoque && produto.estoque > 0 && produto.estoque <= 3 && (
+          <span className="absolute right-3 top-3 rounded-full bg-terracota px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+            Últimas {produto.estoque}
+          </span>
+        )}
+
         <div className="absolute inset-0 flex items-end justify-center bg-carvao/0 pb-4 opacity-0 transition group-hover:bg-carvao/20 group-hover:opacity-100">
           <span className="rounded-full bg-creme px-4 py-2 text-xs font-semibold text-marrom-escuro shadow">
             Ver peça

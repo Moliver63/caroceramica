@@ -55,6 +55,10 @@ function Formulario() {
     produtoExistente?.observacaoArtesanal ?? ""
   );
   const [ativo, setAtivo] = useState(produtoExistente?.ativo ?? true);
+  const [controlarEstoque, setControlarEstoque] = useState(
+    produtoExistente?.controlarEstoque ?? false
+  );
+  const [estoque, setEstoque] = useState(produtoExistente?.estoque ?? 0);
   const [imagens, setImagens] = useState<string[]>(produtoExistente?.imagens ?? []);
   const [enviandoImagem, setEnviandoImagem] = useState(false);
   const [progressoUpload, setProgressoUpload] = useState<{ atual: number; total: number } | null>(
@@ -76,6 +80,8 @@ function Formulario() {
       (produtoExistente.tipoPersonalizacao as TipoPersonalizacao | null) ?? "carimbo"
     );
     setPrecoSobConsulta(produtoExistente.precoSobConsulta);
+    setControlarEstoque(produtoExistente.controlarEstoque);
+    setEstoque(produtoExistente.estoque);
     setCustoPersonalizacao(produtoExistente.custoPersonalizacao ?? "0");
     setPrazoProducaoDias(produtoExistente.prazoProducaoDias);
     setObservacaoArtesanal(produtoExistente.observacaoArtesanal ?? "");
@@ -167,6 +173,8 @@ function Formulario() {
       tipoPersonalizacao: personalizavel ? tipoPersonalizacao : undefined,
       custoPersonalizacao: personalizavel ? custoPersonalizacao : "0",
       precoSobConsulta,
+      controlarEstoque,
+      estoque: Number(estoque),
       prazoProducaoDias: Number(prazoProducaoDias),
       observacaoArtesanal: observacaoArtesanal || undefined,
       imagens,
@@ -278,6 +286,28 @@ function Formulario() {
             />
           </div>
         </div>
+
+        <label className="flex items-center gap-2 text-sm text-marrom-escuro">
+          <input
+            type="checkbox"
+            checked={controlarEstoque}
+            onChange={(e) => setControlarEstoque(e.target.checked)}
+          />
+          Controlar estoque (desmarcado = sob encomenda, sem limite fixo)
+        </label>
+
+        {controlarEstoque && (
+          <div className="max-w-[10rem]">
+            <label className="text-sm text-marrom">Peças em estoque</label>
+            <input
+              type="number"
+              min={0}
+              value={estoque}
+              onChange={(e) => setEstoque(Number(e.target.value))}
+              className="mt-1 w-full rounded-lg border border-borda bg-creme px-4 py-2.5 text-marrom-escuro"
+            />
+          </div>
+        )}
 
         <label className="flex items-center gap-2 text-sm text-marrom-escuro">
           <input

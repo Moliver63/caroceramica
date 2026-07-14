@@ -117,6 +117,16 @@ export default function ProdutoDetalhe() {
             </p>
           )}
 
+          {produto.controlarEstoque && (
+            <p className={`mt-1 text-sm ${produto.estoque === 0 ? "text-red-600" : "text-marrom"}`}>
+              {produto.estoque === 0
+                ? "Peça esgotada no momento"
+                : produto.estoque <= 3
+                ? `Últimas ${produto.estoque} peças em estoque`
+                : `${produto.estoque} peças disponíveis`}
+            </p>
+          )}
+
           {produto.variantesArgila.length > 0 && (
             <div className="mt-6">
               <p className="mb-2 text-sm font-medium text-marrom-escuro">Cor da argila</p>
@@ -200,6 +210,13 @@ export default function ProdutoDetalhe() {
             >
               Consultar valor
             </a>
+          ) : produto.controlarEstoque && produto.estoque === 0 ? (
+            <button
+              disabled
+              className="mt-6 w-full cursor-not-allowed rounded-full bg-borda py-3 text-marrom-escuro/50"
+            >
+              Peça esgotada
+            </button>
           ) : (
             <button
               onClick={handleAdicionarAoCarrinho}

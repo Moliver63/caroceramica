@@ -6,6 +6,7 @@ import Carrinho from "./routes/Carrinho";
 import Checkout from "./routes/Checkout";
 import PedidoConfirmado from "./routes/PedidoConfirmado";
 import Historia from "./routes/Historia";
+import Rastreio from "./routes/Rastreio";
 import AdminLogin from "./routes/admin/AdminLogin";
 import AdminProdutos from "./routes/admin/AdminProdutos";
 import AdminProdutoForm from "./routes/admin/AdminProdutoForm";
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/checkout" component={Checkout} />
         <Route path="/pedido/:codigo" component={PedidoConfirmado} />
         <Route path="/historia" component={Historia} />
+        <Route path="/rastreio" component={Rastreio} />
         <Route path="/admin/login" component={AdminLogin} />
         <Route path="/admin/produtos" component={AdminProdutos} />
         <Route path="/admin/produtos/novo" component={AdminProdutoForm} />

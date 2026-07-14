@@ -41,6 +41,9 @@ export default function Footer() {
             <Link href="/historia" className="hover:text-terracota">
               Nossa história
             </Link>
+            <Link href="/rastreio" className="hover:text-terracota">
+              Rastrear pedido
+            </Link>
           </nav>
         </div>
 

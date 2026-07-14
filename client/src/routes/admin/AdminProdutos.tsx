@@ -28,6 +28,12 @@ function ListaProdutos() {
             Clientes
           </Link>
           <Link
+            href="/admin/emails"
+            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
+          >
+            E-mails
+          </Link>
+          <Link
             href="/admin/leads"
             className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
           >

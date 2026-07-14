@@ -14,6 +14,7 @@ import AdminLeads from "./routes/admin/AdminLeads";
 import AdminPedidos from "./routes/admin/AdminPedidos";
 import AdminPedidoDetalhe from "./routes/admin/AdminPedidoDetalhe";
 import AdminClientes from "./routes/admin/AdminClientes";
+import AdminEmails from "./routes/admin/AdminEmails";
 import { CarrinhoProvider } from "./lib/carrinho-context";
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/admin/pedidos" component={AdminPedidos} />
         <Route path="/admin/pedidos/:codigo" component={AdminPedidoDetalhe} />
         <Route path="/admin/clientes" component={AdminClientes} />
+        <Route path="/admin/emails" component={AdminEmails} />
         <Route>
           {() => <div className="p-10 text-center">Página não encontrada</div>}
         </Route>

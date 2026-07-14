@@ -8,6 +8,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { ENV } from "./env";
 import asaasWebhookRouter from "../routes/asaas-webhook";
+import resendWebhookRouter from "../routes/resend-webhook";
 
 async function startServer() {
   const app = express();
@@ -18,12 +19,24 @@ async function startServer() {
   }
 
   app.use(cookieParser());
-  app.use(express.json());
+  app.use(
+    express.json({
+      // Guarda o corpo bruto (antes do parse) — necessário pra verificar
+      // a assinatura de webhooks (Resend usa isso pra provar que é ele
+      // mesmo enviando, não alguém se passando por ele).
+      verify: (req, _res, buf) => {
+        (req as express.Request & { rawBody?: Buffer }).rawBody = buf;
+      },
+    })
+  );
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
   // Webhook do Asaas — REST simples, fora do tRPC (chamada externa do gateway)
   app.use("/api/webhooks/asaas", asaasWebhookRouter);
+
+  // Webhook do Resend — recebe e-mails enviados pra contato@carovargas.com.br
+  app.use("/api/webhooks/resend", resendWebhookRouter);
 
   // API tRPC — todas as chamadas do client passam por aqui
   app.use(

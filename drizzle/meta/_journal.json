@@ -36,6 +36,13 @@
       "when": 1784041178613,
       "tag": "0004_fixed_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784058477069,
+      "tag": "0005_stiff_cyclops",
+      "breakpoints": true
     }
   ]
 }

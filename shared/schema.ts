@@ -292,3 +292,18 @@ export const leads = pgTable("leads", {
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
   ativo: boolean("ativo").notNull().default(true),
 });
+
+// ──────────────────────────────────────────────────────────
+// MENSAGENS RECEBIDAS (contato@carovargas.com.br via Resend)
+// ──────────────────────────────────────────────────────────
+
+export const mensagensContato = pgTable("mensagens_contato", {
+  id: serial("id").primaryKey(),
+  remetente: varchar("remetente", { length: 200 }).notNull(),
+  destinatario: varchar("destinatario", { length: 200 }),
+  assunto: varchar("assunto", { length: 250 }),
+  corpoTexto: text("corpo_texto"),
+  corpoHtml: text("corpo_html"),
+  lida: boolean("lida").notNull().default(false),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});

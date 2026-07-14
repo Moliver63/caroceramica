@@ -9,7 +9,6 @@ export const ENV = {
   // Segredo usado pra assinar o cookie de sessão do admin — não é a senha.
   adminSessionSecret: process.env.ADMIN_SESSION_SECRET ?? "",
 
-  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
-  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
-  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
+  cloudflareAccountId: process.env.CLOUDFLARE_ACCOUNT_ID ?? "",
+  cloudflareApiToken: process.env.CLOUDFLARE_API_TOKEN ?? "",
 };

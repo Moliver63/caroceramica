@@ -10,6 +10,9 @@ import AdminLogin from "./routes/admin/AdminLogin";
 import AdminProdutos from "./routes/admin/AdminProdutos";
 import AdminProdutoForm from "./routes/admin/AdminProdutoForm";
 import AdminLeads from "./routes/admin/AdminLeads";
+import AdminPedidos from "./routes/admin/AdminPedidos";
+import AdminPedidoDetalhe from "./routes/admin/AdminPedidoDetalhe";
+import AdminClientes from "./routes/admin/AdminClientes";
 import { CarrinhoProvider } from "./lib/carrinho-context";
 
 export default function App() {
@@ -28,6 +31,9 @@ export default function App() {
         <Route path="/admin/produtos/novo" component={AdminProdutoForm} />
         <Route path="/admin/produtos/:slug/editar" component={AdminProdutoForm} />
         <Route path="/admin/leads" component={AdminLeads} />
+        <Route path="/admin/pedidos" component={AdminPedidos} />
+        <Route path="/admin/pedidos/:codigo" component={AdminPedidoDetalhe} />
+        <Route path="/admin/clientes" component={AdminClientes} />
         <Route>
           {() => <div className="p-10 text-center">Página não encontrada</div>}
         </Route>

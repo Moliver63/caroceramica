@@ -38,3 +38,23 @@ export function labelCategoria(valor: string): string {
 
 export const ROTA_NAO_ENCONTRADA_MSG = "Rota não encontrada.";
 export const ERRO_INTERNO_MSG = "Erro interno do servidor.";
+
+// Fonte única dos status de pedido — ordem do fluxo, rótulo e cor do
+// badge usados no admin (lista e detalhe de pedidos).
+export const STATUS_PEDIDO = [
+  { valor: "aguardando_pagamento", label: "Aguardando pagamento", cor: "bg-borda text-marrom-escuro" },
+  { valor: "pago", label: "Pago", cor: "bg-esmalte-claro text-esmalte" },
+  { valor: "em_producao", label: "Em produção", cor: "bg-terracota/20 text-terracota" },
+  { valor: "pronto_envio", label: "Pronto para envio", cor: "bg-terracota/20 text-terracota" },
+  { valor: "enviado", label: "Enviado", cor: "bg-esmalte-claro text-esmalte" },
+  { valor: "entregue", label: "Entregue", cor: "bg-esmalte text-creme" },
+  { valor: "cancelado", label: "Cancelado", cor: "bg-red-100 text-red-700" },
+] as const;
+
+export function labelStatusPedido(valor: string): string {
+  return STATUS_PEDIDO.find((s) => s.valor === valor)?.label ?? valor;
+}
+
+export function corStatusPedido(valor: string): string {
+  return STATUS_PEDIDO.find((s) => s.valor === valor)?.cor ?? "bg-borda text-marrom-escuro";
+}

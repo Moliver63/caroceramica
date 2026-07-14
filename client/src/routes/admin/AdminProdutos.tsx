@@ -14,7 +14,19 @@ function ListaProdutos() {
       </Link>
       <div className="mt-2 flex items-center justify-between">
         <h1 className="font-serif text-2xl text-marrom-escuro">Admin — Produtos</h1>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/pedidos"
+            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
+          >
+            Pedidos
+          </Link>
+          <Link
+            href="/admin/clientes"
+            className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"
+          >
+            Clientes
+          </Link>
           <Link
             href="/admin/leads"
             className="rounded-full border border-borda px-5 py-2.5 text-sm text-marrom-escuro"

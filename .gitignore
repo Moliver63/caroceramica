@@ -6,6 +6,7 @@
 .env.local
 .env.*.local
 server/.env
+server/env
 client/.env
 
 dist/

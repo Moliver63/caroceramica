@@ -1,4 +1,0 @@
-DATABASE_URL=postgresql://caro_ceramica_user:1G8ks0D96Wc5pRxiXsBGkFnaS2mg0Eau@dpg-d98etgl8nd3s73c83ce0-a.ohio-postgres.render.com/caro_ceramica_db
-ASAAS_API_KEY=sua_chave_aqui
-ASAAS_ENV=sandbox
-PORT=4000

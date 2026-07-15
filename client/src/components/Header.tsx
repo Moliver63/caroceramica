@@ -59,20 +59,24 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-borda bg-creme/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link href="/" className="flex items-center gap-2.5">
-          <img src="/marca/icone.png" alt="" className="h-9 w-9" aria-hidden="true" />
-          <img src="/marca/wordmark.png" alt="Caro Vargas Cerâmica" className="h-6 w-auto" />
+        <Link href="/" className="flex flex-shrink-0 items-center gap-2">
+          <img src="/marca/icone.png" alt="" className="h-8 w-8" aria-hidden="true" />
+          <img src="/marca/wordmark.png" alt="Caro Vargas Cerâmica" className="h-4 w-auto" />
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm md:flex">
+        <nav className="hidden items-center gap-6 text-sm md:flex">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="eyebrow text-marrom-escuro/80 hover:text-terracota">
+            <Link
+              key={l.href}
+              href={l.href}
+              className="eyebrow whitespace-nowrap text-marrom-escuro/80 hover:text-terracota"
+            >
               {l.label}
             </Link>
           ))}
           <Link
             href="/carrinho"
-            className="relative flex items-center gap-2 text-marrom-escuro hover:text-terracota"
+            className="relative flex flex-shrink-0 items-center gap-2 text-marrom-escuro hover:text-terracota"
             aria-label={`Carrinho, ${totalItens} ${totalItens === 1 ? "item" : "itens"}`}
           >
             <IconeSacola className="h-6 w-6" />
@@ -85,7 +89,7 @@ export default function Header() {
 
           <Link
             href="/admin/produtos"
-            className="ml-2 border-l border-borda pl-6 text-marrom-escuro/40 hover:text-marrom-escuro"
+            className="ml-1 flex-shrink-0 border-l border-borda pl-5 text-marrom-escuro/40 hover:text-marrom-escuro"
             aria-label="Acesso administrativo"
             title="Acesso administrativo"
           >

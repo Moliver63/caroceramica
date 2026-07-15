@@ -56,3 +56,9 @@ h1, h2, h3, .font-serif {
     animation: none;
   }
 }
+
+/* Entrada do mini-carrinho lateral (desliza da direita) */
+@keyframes entrar {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

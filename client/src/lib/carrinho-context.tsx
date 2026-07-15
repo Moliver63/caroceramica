@@ -13,12 +13,18 @@ interface CarrinhoContextValue {
   limparCarrinho: () => void;
   totalItens: number;
   subtotal: number;
+  // Confirmação visual ao adicionar — o mini-carrinho lateral escuta isso
+  ultimoItemAdicionado: ItemCarrinho | null;
+  drawerAberto: boolean;
+  fecharDrawer: () => void;
 }
 
 const CarrinhoContext = createContext<CarrinhoContextValue | null>(null);
 
 export function CarrinhoProvider({ children }: { children: ReactNode }) {
   const [itens, setItens] = useState<ItemCarrinho[]>([]);
+  const [ultimoItemAdicionado, setUltimoItemAdicionado] = useState<ItemCarrinho | null>(null);
+  const [drawerAberto, setDrawerAberto] = useState(false);
 
   function adicionarItem(novoItem: ItemCarrinho) {
     setItens((atual) => {
@@ -40,6 +46,13 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
       return [...atual, novoItem];
     });
+
+    setUltimoItemAdicionado(novoItem);
+    setDrawerAberto(true);
+  }
+
+  function fecharDrawer() {
+    setDrawerAberto(false);
   }
 
   function removerItem(produtoId: number, varianteCorId: number | null) {
@@ -87,6 +100,9 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         limparCarrinho,
         totalItens,
         subtotal,
+        ultimoItemAdicionado,
+        drawerAberto,
+        fecharDrawer,
       }}
     >
       {children}

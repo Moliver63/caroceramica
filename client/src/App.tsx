@@ -17,6 +17,7 @@ import AdminClientes from "./routes/admin/AdminClientes";
 import AdminEmails from "./routes/admin/AdminEmails";
 import AdminCategorias from "./routes/admin/AdminCategorias";
 import BotaoWhatsApp from "./components/BotaoWhatsApp";
+import MiniCarrinhoDrawer from "./components/MiniCarrinhoDrawer";
 import { CarrinhoProvider } from "./lib/carrinho-context";
 
 export default function App() {
@@ -50,6 +51,7 @@ export default function App() {
       </Switch>
 
       {!ehAdmin && <BotaoWhatsApp />}
+      {!ehAdmin && <MiniCarrinhoDrawer />}
     </CarrinhoProvider>
   );
 }

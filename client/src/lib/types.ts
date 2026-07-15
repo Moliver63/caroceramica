@@ -34,7 +34,7 @@ export type MetodoPagamento = "pix" | "boleto" | "cartao_credito";
 // Item do carrinho — estado local, ainda não é pedido
 export interface ItemCarrinho {
   produtoId: number;
-  produto: Pick<Produto, "id" | "nome" | "slug" | "precoBase" | "personalizavel" | "custoPersonalizacao">;
+  produto: Pick<Produto, "id" | "nome" | "slug" | "precoBase" | "personalizavel" | "custoPersonalizacao" | "imagens">;
   varianteCorId: number | null;
   varianteArgilaId?: number | null;
   quantidade: number;

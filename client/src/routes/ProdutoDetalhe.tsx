@@ -69,6 +69,7 @@ export default function ProdutoDetalhe() {
         precoBase: produto.precoBase,
         personalizavel: produto.personalizavel,
         custoPersonalizacao: produto.custoPersonalizacao,
+        imagens: produto.imagens,
       },
       varianteCorId: corSelecionada?.id ?? null,
       varianteArgilaId: argilaSelecionada?.id ?? null,

@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { ENV } from "../_core/env";
 
 let clienteResend: Resend | null = null;
-function getResend(): Resend | null {
+export function getResend(): Resend | null {
   if (!ENV.resendApiKey) return null;
   if (!clienteResend) clienteResend = new Resend(ENV.resendApiKey);
   return clienteResend;

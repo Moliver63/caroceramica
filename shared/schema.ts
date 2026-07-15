@@ -312,6 +312,26 @@ export const mensagensContato = pgTable("mensagens_contato", {
   lida: boolean("lida").notNull().default(false),
   respondida: boolean("respondida").notNull().default(false),
   arquivada: boolean("arquivada").notNull().default(false),
+  // Lixeira — diferente de "arquivada" (arquivar é "guardar fora da
+  // caixa de entrada", excluir é "descartar"). Nada é apagado de
+  // verdade do banco, só marcado, então dá pra restaurar.
+  excluida: boolean("excluida").notNull().default(false),
+  criadoEm: timestamp("criado_em").defaultNow().notNull(),
+});
+
+// E-mails que o admin mandou pela aba /admin/emails — sem isso, uma
+// resposta enviada simplesmente "sumia": saía de verdade pelo Resend,
+// mas não ficava nenhum registro em lugar nenhum pra rever depois.
+export const mensagensEnviadas = pgTable("mensagens_enviadas", {
+  id: serial("id").primaryKey(),
+  // Se a resposta foi a uma mensagem recebida, guarda a referência —
+  // fica nulo pra e-mails avulsos (não é obrigatório responder algo).
+  mensagemOrigemId: integer("mensagem_origem_id").references(() => mensagensContato.id, {
+    onDelete: "set null",
+  }),
+  destinatario: varchar("destinatario", { length: 200 }).notNull(),
+  assunto: varchar("assunto", { length: 250 }),
+  corpo: text("corpo").notNull(),
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
 });
 

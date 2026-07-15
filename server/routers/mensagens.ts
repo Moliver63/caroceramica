@@ -1,8 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { mensagensContato } from "../../shared/schema";
+import { mensagensContato, mensagensEnviadas } from "../../shared/schema";
 import { enviarEmail, emailRespostaContato } from "../lib/email";
 import { ENV } from "../_core/env";
 import { adminProcedure, router } from "../_core/trpc";
@@ -14,15 +14,34 @@ function extrairEndereco(remetente: string): string {
   return match ? match[1] : remetente.trim();
 }
 
+const pastaSchema = z.enum(["entrada", "arquivadas", "excluidas"]);
+
 export const mensagensRouter = router({
+  // ── Caixa de entrada / arquivadas / lixeira — uma pasta por vez ──
   listar: adminProcedure
-    .input(z.object({ arquivadas: z.boolean().default(false) }).optional())
+    .input(z.object({ pasta: pastaSchema.default("entrada") }).optional())
     .query(async ({ input }) => {
+      const pasta = input?.pasta ?? "entrada";
+
+      const condicao =
+        pasta === "excluidas"
+          ? eq(mensagensContato.excluida, true)
+          : pasta === "arquivadas"
+          ? and(eq(mensagensContato.arquivada, true), eq(mensagensContato.excluida, false))
+          : and(eq(mensagensContato.arquivada, false), eq(mensagensContato.excluida, false));
+
       return db.query.mensagensContato.findMany({
-        where: eq(mensagensContato.arquivada, input?.arquivadas ?? false),
+        where: condicao,
         orderBy: desc(mensagensContato.criadoEm),
       });
     }),
+
+  // ── Pasta "Enviados" — respostas que o admin mandou ───────────
+  listarEnviadas: adminProcedure.query(async () => {
+    return db.query.mensagensEnviadas.findMany({
+      orderBy: desc(mensagensEnviadas.criadoEm),
+    });
+  }),
 
   marcarComoLida: adminProcedure
     .input(z.object({ id: z.number().int() }))
@@ -44,8 +63,28 @@ export const mensagensRouter = router({
       return { sucesso: true as const };
     }),
 
+  // ── Mover pra lixeira / restaurar da lixeira ──────────────────
+  excluir: adminProcedure
+    .input(z.object({ id: z.number().int(), excluida: z.boolean().default(true) }))
+    .mutation(async ({ input }) => {
+      await db
+        .update(mensagensContato)
+        .set({ excluida: input.excluida })
+        .where(eq(mensagensContato.id, input.id));
+      return { sucesso: true as const };
+    }),
+
+  // ── Esvaziar a lixeira de vez (aí sim apaga do banco) ─────────
+  excluirPermanentemente: adminProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input }) => {
+      await db.delete(mensagensContato).where(eq(mensagensContato.id, input.id));
+      return { sucesso: true as const };
+    }),
+
   // ── Responder direto do admin — sai com a assinatura da marca,
-  //    do endereço contato@carovargas.com.br ──
+  //    do endereço contato@carovargas.com.br, e fica salva em
+  //    "Enviados" (antes simplesmente sumia depois de enviada) ──
   responder: adminProcedure
     .input(z.object({ id: z.number().int(), corpo: z.string().min(1) }))
     .mutation(async ({ input }) => {
@@ -83,6 +122,13 @@ export const mensagensRouter = router({
         .update(mensagensContato)
         .set({ respondida: true, lida: true })
         .where(eq(mensagensContato.id, input.id));
+
+      await db.insert(mensagensEnviadas).values({
+        mensagemOrigemId: mensagem.id,
+        destinatario: enderecoDestino,
+        assunto: assuntoResposta,
+        corpo: input.corpo,
+      });
 
       return { sucesso: true as const };
     }),

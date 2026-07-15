@@ -14,6 +14,7 @@ export const ENV = {
 
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   emailRemetente: process.env.EMAIL_REMETENTE ?? "Caro Vargas Cerâmica <pedidos@carovargas.com.br>",
+  emailContato: process.env.EMAIL_CONTATO ?? "Caro Vargas Cerâmica <contato@carovargas.com.br>",
   resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET ?? "",
   cronSecret: process.env.CRON_SECRET ?? "",
 };

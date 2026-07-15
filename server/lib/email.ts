@@ -12,33 +12,43 @@ export function getResend(): Resend | null {
  * Envia um e-mail via Resend. Se RESEND_API_KEY não estiver configurada,
  * só loga um aviso e segue em frente — nunca derruba o fluxo principal
  * (criar pedido, mudar status) por causa de e-mail.
+ *
+ * Retorna true/false pra quem precisa saber se realmente saiu (como a
+ * resposta manual do admin, onde faz sentido avisar se falhou) — as
+ * chamadas automáticas (pedido recebido, etc.) seguem ignorando o
+ * retorno, como sempre.
  */
 export async function enviarEmail(params: {
   para: string;
   assunto: string;
   html: string;
-}) {
+  remetente?: string;
+  responderPara?: string;
+}): Promise<boolean> {
   const resend = getResend();
 
   if (!resend) {
     console.warn(
       `[email] RESEND_API_KEY não configurada — e-mail para ${params.para} ("${params.assunto}") não foi enviado.`
     );
-    return;
+    return false;
   }
 
   try {
     await resend.emails.send({
-      from: ENV.emailRemetente,
+      from: params.remetente ?? ENV.emailRemetente,
       to: params.para,
       subject: params.assunto,
       html: params.html,
+      ...(params.responderPara && { replyTo: params.responderPara }),
     });
+    return true;
   } catch (erro) {
     // E-mail é "melhor esforço" — se falhar, loga e segue. O pedido já
     // foi salvo no banco, não faz sentido quebrar a compra por causa
     // de um e-mail que não saiu.
     console.error(`[email] Falha ao enviar e-mail para ${params.para}:`, erro);
+    return false;
   }
 }
 
@@ -153,4 +163,53 @@ export function emailLembreteAbandono(params: { nomeCliente: string; codigoPedid
     </p>
     <p>Se já desistiu, sem problemas — pode ignorar esta mensagem.</p>
   `);
+}
+
+// ──────────────────────────────────────────────────────────
+// Assinatura da caixa de contato — diferente do envelope
+// transacional (pedidos), tom mais pessoal, com a logo de verdade.
+// A URL da logo precisa ser absoluta (clientes de e-mail não
+// resolvem caminho relativo).
+// ──────────────────────────────────────────────────────────
+
+function assinaturaContatoHtml() {
+  return `
+    <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #E4D9CC;">
+      <img
+        src="https://carovargas.com.br/marca/wordmark.png"
+        alt="Caro Vargas Cerâmica"
+        style="height: 20px; display: block; margin-bottom: 10px;"
+      />
+      <p style="margin: 0; font-size: 13px; color: #8C7A6B; line-height: 1.6;">
+        Equipe Caro Vargas Cerâmica<br/>
+        <a href="mailto:contato@carovargas.com.br" style="color: #B08D6E; text-decoration: none;">contato@carovargas.com.br</a>
+        &nbsp;·&nbsp;
+        <a href="https://carovargas.com.br" style="color: #B08D6E; text-decoration: none;">carovargas.com.br</a>
+        &nbsp;·&nbsp;
+        <a href="https://www.instagram.com/carovargas.ceramica" style="color: #B08D6E; text-decoration: none;">@carovargas.ceramica</a>
+      </p>
+    </div>
+  `;
+}
+
+function escaparHtml(texto: string) {
+  return texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br/>");
+}
+
+/**
+ * Corpo de uma resposta manual do admin a uma mensagem recebida em
+ * contato@ — o texto vem cru de um textarea (sem HTML), por isso escapa
+ * antes de virar HTML, e sempre fecha com a assinatura da marca.
+ */
+export function emailRespostaContato(params: { corpoResposta: string }) {
+  return `
+    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; color: #4A3B31; font-size: 15px; line-height: 1.6;">
+      <div>${escaparHtml(params.corpoResposta)}</div>
+      ${assinaturaContatoHtml()}
+    </div>
+  `;
 }

@@ -303,12 +303,15 @@ export const leads = pgTable("leads", {
 
 export const mensagensContato = pgTable("mensagens_contato", {
   id: serial("id").primaryKey(),
+  resendEmailId: varchar("resend_email_id", { length: 200 }).unique(),
   remetente: varchar("remetente", { length: 200 }).notNull(),
   destinatario: varchar("destinatario", { length: 200 }),
   assunto: varchar("assunto", { length: 250 }),
   corpoTexto: text("corpo_texto"),
   corpoHtml: text("corpo_html"),
   lida: boolean("lida").notNull().default(false),
+  respondida: boolean("respondida").notNull().default(false),
+  arquivada: boolean("arquivada").notNull().default(false),
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
 });
 

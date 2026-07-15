@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { mensagensContato } from "../../shared/schema";
 import { ENV } from "../_core/env";
@@ -49,6 +50,15 @@ resendWebhookRouter.post("/", async (req, res) => {
     }
 
     if (evento.type === "email.received" && evento.data?.email_id) {
+      // Proteção contra reenvio do webhook (o Resend pode reenviar se não
+      // receber 200 a tempo) — se já processamos esse email_id, ignora.
+      const jaExiste = await db.query.mensagensContato.findFirst({
+        where: eq(mensagensContato.resendEmailId, evento.data.email_id),
+      });
+      if (jaExiste) {
+        return res.sendStatus(200);
+      }
+
       const { data: email, error } = await resend.emails.receiving.get(
         evento.data.email_id
       );
@@ -59,6 +69,7 @@ resendWebhookRouter.post("/", async (req, res) => {
       }
 
       await db.insert(mensagensContato).values({
+        resendEmailId: evento.data.email_id,
         remetente: email.from ?? "desconhecido",
         destinatario: Array.isArray(email.to) ? email.to.join(", ") : String(email.to ?? ""),
         assunto: email.subject ?? "(sem assunto)",

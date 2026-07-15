@@ -132,4 +132,41 @@ export const mensagensRouter = router({
 
       return { sucesso: true as const };
     }),
+
+  // ── Escrever um e-mail novo, do zero (não em resposta a nada) —
+  //    pra falar com um cliente por iniciativa própria ──
+  enviarNovo: adminProcedure
+    .input(
+      z.object({
+        destinatario: z.string().email(),
+        assunto: z.string().min(1),
+        corpo: z.string().min(1),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const enviado = await enviarEmail({
+        para: input.destinatario,
+        assunto: input.assunto,
+        html: emailRespostaContato({ corpoResposta: input.corpo }),
+        remetente: ENV.emailContato,
+        responderPara: ENV.emailContato,
+      });
+
+      if (!enviado) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message:
+            "Não foi possível enviar o e-mail agora (confira se RESEND_API_KEY está configurada). Tente novamente.",
+        });
+      }
+
+      await db.insert(mensagensEnviadas).values({
+        mensagemOrigemId: null,
+        destinatario: input.destinatario,
+        assunto: input.assunto,
+        corpo: input.corpo,
+      });
+
+      return { sucesso: true as const };
+    }),
 });

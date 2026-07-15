@@ -3,7 +3,7 @@ import DOMPurify from "dompurify";
 import { trpc } from "../../lib/trpc";
 import AdminGuard from "./AdminGuard";
 import AdminLayout from "./AdminLayout";
-import { Card, Botao, Badge, EmptyState } from "./AdminUI";
+import { Card, Botao, Badge, EmptyState, Label, campoBase } from "./AdminUI";
 
 type Pasta = "entrada" | "enviados" | "arquivadas" | "excluidas";
 
@@ -233,6 +233,104 @@ function PainelLeituraEnviada({ mensagem, onVoltouMobile }: { mensagem: Enviada;
   );
 }
 
+function Compositor({ onFechar, onEnviado }: { onFechar: () => void; onEnviado: () => void }) {
+  const utils = trpc.useUtils();
+  const { data: clientes = [] } = trpc.clientes.listar.useQuery();
+  const { data: leads = [] } = trpc.leads.listar.useQuery();
+
+  const sugestoes = useMemo(() => {
+    const emails = new Set<string>();
+    clientes.forEach((c) => c.email && emails.add(c.email));
+    leads.forEach((l) => emails.add(l.email));
+    return Array.from(emails);
+  }, [clientes, leads]);
+
+  const [destinatario, setDestinatario] = useState("");
+  const [assunto, setAssunto] = useState("");
+  const [corpo, setCorpo] = useState("");
+
+  const enviar = trpc.mensagens.enviarNovo.useMutation({
+    onSuccess: () => {
+      utils.mensagens.listarEnviadas.invalidate();
+      setDestinatario("");
+      setAssunto("");
+      setCorpo("");
+      onEnviado();
+    },
+  });
+
+  return (
+    <Card className="flex h-full flex-col overflow-hidden">
+      <div className="flex items-center justify-between border-b border-black/5 p-5">
+        <p className="text-base font-semibold text-[#2B2420]">Nova mensagem</p>
+        <button onClick={onFechar} className="text-sm text-[#8C7A6B] hover:text-terracota">
+          Cancelar
+        </button>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+        <div>
+          <Label>Para</Label>
+          <input
+            type="email"
+            list="sugestoes-email"
+            value={destinatario}
+            onChange={(e) => setDestinatario(e.target.value)}
+            placeholder="cliente@email.com"
+            className={campoBase}
+          />
+          <datalist id="sugestoes-email">
+            {sugestoes.map((email) => (
+              <option key={email} value={email} />
+            ))}
+          </datalist>
+          <p className="mt-1 text-xs text-[#8C7A6B]">
+            Sugestões vêm dos e-mails de clientes e da newsletter — mas pode digitar
+            qualquer endereço.
+          </p>
+        </div>
+
+        <div>
+          <Label>Assunto</Label>
+          <input
+            value={assunto}
+            onChange={(e) => setAssunto(e.target.value)}
+            placeholder="Assunto do e-mail"
+            className={campoBase}
+          />
+        </div>
+
+        <div>
+          <Label>Mensagem</Label>
+          <textarea
+            value={corpo}
+            onChange={(e) => setCorpo(e.target.value)}
+            rows={10}
+            placeholder="Escreva sua mensagem…"
+            className={campoBase}
+          />
+        </div>
+      </div>
+
+      <div className="border-t border-black/5 bg-black/[0.015] p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[#8C7A6B]">
+            Sai de contato@carovargas.com.br, com a assinatura da marca automática.
+          </p>
+          <Botao
+            variante="primario"
+            disabled={!destinatario.trim() || !assunto.trim() || !corpo.trim() || enviar.isPending}
+            onClick={() => enviar.mutate({ destinatario, assunto, corpo })}
+          >
+            {enviar.isPending ? "Enviando…" : "Enviar"}
+          </Botao>
+        </div>
+        {enviar.isError && <p className="mt-2 text-xs text-red-600">{enviar.error.message}</p>}
+      </div>
+    </Card>
+  );
+}
+
 function Inbox() {
   const [pasta, setPasta] = useState<Pasta>("entrada");
   const ehEnviados = pasta === "enviados";
@@ -253,6 +351,7 @@ function Inbox() {
 
   const [busca, setBusca] = useState("");
   const [selecionadaId, setSelecionadaId] = useState<number | null>(null);
+  const [compondo, setCompondo] = useState(false);
 
   const listaAtual: (Mensagem | Enviada)[] = ehEnviados ? enviadas : mensagens;
 
@@ -272,17 +371,31 @@ function Inbox() {
 
   function selecionar(m: Mensagem | Enviada) {
     setSelecionadaId(m.id);
+    setCompondo(false);
     if ("lida" in m && !m.lida) marcarComoLida.mutate({ id: m.id });
   }
 
   function trocarPasta(p: Pasta) {
     setPasta(p);
     setSelecionadaId(null);
+    setCompondo(false);
     setBusca("");
   }
 
+  function escrever() {
+    setSelecionadaId(null);
+    setCompondo(true);
+  }
+
   return (
-    <AdminLayout titulo="E-mails">
+    <AdminLayout
+      titulo="E-mails"
+      acoes={
+        <Botao variante="primario" onClick={escrever}>
+          + Escrever
+        </Botao>
+      }
+    >
       <p className="-mt-3 mb-5 text-sm text-[#8C7A6B]">
         Caixa de contato@carovargas.com.br
         {pasta === "entrada" && naoLidas > 0 && ` — ${naoLidas} não lida${naoLidas > 1 ? "s" : ""}`}
@@ -306,7 +419,7 @@ function Inbox() {
 
       {isLoading && <p className="text-sm text-[#8C7A6B]">Carregando…</p>}
 
-      {!isLoading && listaAtual.length === 0 && (
+      {!isLoading && listaAtual.length === 0 && !compondo && (
         <EmptyState>
           {pasta === "entrada" && "Nenhuma mensagem recebida ainda."}
           {pasta === "enviados" && "Você ainda não respondeu nenhuma mensagem."}
@@ -315,9 +428,9 @@ function Inbox() {
         </EmptyState>
       )}
 
-      {listaAtual.length > 0 && (
+      {(listaAtual.length > 0 || compondo) && (
         <div className="grid gap-5 md:grid-cols-[22rem_1fr]" style={{ minHeight: "32rem" }}>
-          <Card className={`flex flex-col overflow-hidden ${selecionada ? "hidden md:flex" : "flex"}`}>
+          <Card className={`flex flex-col overflow-hidden ${selecionada || compondo ? "hidden md:flex" : "flex"}`}>
             <div className="border-b border-black/5 p-3">
               <input
                 value={busca}
@@ -370,8 +483,16 @@ function Inbox() {
             </div>
           </Card>
 
-          <div className={selecionada ? "flex" : "hidden md:flex"}>
-            {selecionada ? (
+          <div className={selecionada || compondo ? "flex" : "hidden md:flex"}>
+            {compondo ? (
+              <Compositor
+                onFechar={() => setCompondo(false)}
+                onEnviado={() => {
+                  setCompondo(false);
+                  trocarPasta("enviados");
+                }}
+              />
+            ) : selecionada ? (
               "remetente" in selecionada ? (
                 <PainelLeituraRecebida
                   mensagem={selecionada}

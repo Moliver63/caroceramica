@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useCarrinho } from "../lib/carrinho-context";
 import { trpc } from "../lib/trpc";
+import { validarDocumento, formatarDocumento } from "../lib/validadores";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
@@ -29,10 +30,56 @@ export default function Checkout() {
   });
 
   const [erro, setErro] = useState<string | null>(null);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepNaoEncontrado, setCepNaoEncontrado] = useState(false);
+  const [documentoTocado, setDocumentoTocado] = useState(false);
   const criarPedido = trpc.checkout.criarPedido.useMutation();
   const enviando = criarPedido.isPending;
 
   const cepLimpo = endereco.cep.replace(/\D/g, "");
+
+  // Autocompletar endereço pelo CEP (ViaCEP — gratuito, sem chave, CORS
+  // liberado). Roda de novo toda vez que o CEP muda pra 8 dígitos.
+  useEffect(() => {
+    if (cepLimpo.length !== 8) {
+      setCepNaoEncontrado(false);
+      return;
+    }
+
+    let cancelado = false;
+    setBuscandoCep(true);
+    setCepNaoEncontrado(false);
+
+    fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+      .then((r) => r.json())
+      .then((dados) => {
+        if (cancelado) return;
+        if (dados.erro) {
+          setCepNaoEncontrado(true);
+          return;
+        }
+        setEndereco((atual) => ({
+          ...atual,
+          logradouro: dados.logradouro || atual.logradouro,
+          bairro: dados.bairro || atual.bairro,
+          cidade: dados.localidade || atual.cidade,
+          uf: dados.uf || atual.uf,
+        }));
+      })
+      .catch(() => {
+        if (!cancelado) setCepNaoEncontrado(true);
+      })
+      .finally(() => {
+        if (!cancelado) setBuscandoCep(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cepLimpo]);
+
+  const documentoValido = !documentoTocado || documento.trim() === "" || validarDocumento(documento);
   const { data: frete, isFetching: calculandoFrete } = trpc.frete.calcular.useQuery(
     { cep: cepLimpo },
     { enabled: cepLimpo.length === 8 }
@@ -42,6 +89,16 @@ export default function Checkout() {
 
   async function finalizarPedido() {
     setErro(null);
+
+    if (!validarDocumento(documento)) {
+      setDocumentoTocado(true);
+      setErro(
+        documento.trim()
+          ? "CPF ou CNPJ inválido. Confira os números digitados."
+          : "Informe um CPF ou CNPJ válido."
+      );
+      return;
+    }
 
     try {
       const resposta = await criarPedido.mutateAsync({
@@ -106,21 +163,41 @@ export default function Checkout() {
             onChange={(e) => setTelefone(e.target.value)}
             className="w-full rounded border border-borda px-3 py-2"
           />
-          <input
-            placeholder="CPF ou CNPJ"
-            value={documento}
-            onChange={(e) => setDocumento(e.target.value)}
-            className="w-full rounded border border-borda px-3 py-2"
-          />
+          <div>
+            <input
+              placeholder="CPF ou CNPJ"
+              value={documento}
+              onChange={(e) => setDocumento(formatarDocumento(e.target.value))}
+              onBlur={() => setDocumentoTocado(true)}
+              inputMode="numeric"
+              className={`w-full rounded border px-3 py-2 ${
+                documentoValido ? "border-borda" : "border-red-400"
+              }`}
+            />
+            {!documentoValido && (
+              <p className="mt-1 text-xs text-red-600">CPF ou CNPJ inválido.</p>
+            )}
+          </div>
 
           <h2 className="pt-4 font-medium">Endereço de entrega</h2>
           <div className="grid grid-cols-2 gap-3">
-            <input
-              placeholder="CEP"
-              value={endereco.cep}
-              onChange={(e) => setEndereco({ ...endereco, cep: e.target.value })}
-              className="rounded border border-borda px-3 py-2"
-            />
+            <div>
+              <input
+                placeholder="CEP"
+                value={endereco.cep}
+                onChange={(e) => setEndereco({ ...endereco, cep: e.target.value })}
+                inputMode="numeric"
+                className="w-full rounded border border-borda px-3 py-2"
+              />
+              {buscandoCep && (
+                <p className="mt-1 text-xs text-marrom">Buscando endereço…</p>
+              )}
+              {cepNaoEncontrado && (
+                <p className="mt-1 text-xs text-red-600">
+                  CEP não encontrado — preencha o endereço manualmente.
+                </p>
+              )}
+            </div>
             <input
               placeholder="Número"
               value={endereco.numero}

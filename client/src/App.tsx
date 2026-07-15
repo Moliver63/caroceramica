@@ -15,6 +15,7 @@ import AdminPedidos from "./routes/admin/AdminPedidos";
 import AdminPedidoDetalhe from "./routes/admin/AdminPedidoDetalhe";
 import AdminClientes from "./routes/admin/AdminClientes";
 import AdminEmails from "./routes/admin/AdminEmails";
+import AdminCategorias from "./routes/admin/AdminCategorias";
 import BotaoWhatsApp from "./components/BotaoWhatsApp";
 import { CarrinhoProvider } from "./lib/carrinho-context";
 
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/admin/pedidos/:codigo" component={AdminPedidoDetalhe} />
         <Route path="/admin/clientes" component={AdminClientes} />
         <Route path="/admin/emails" component={AdminEmails} />
+        <Route path="/admin/categorias" component={AdminCategorias} />
         <Route>
           {() => <div className="p-10 text-center">Página não encontrada</div>}
         </Route>

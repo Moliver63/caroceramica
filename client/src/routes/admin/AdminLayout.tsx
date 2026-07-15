@@ -44,6 +44,15 @@ function IconeEstrela({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconeImagem({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="8.5" cy="9.5" r="1.5" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M4 16.5 8.5 12l3 3 4-4.5 4.5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 function IconeSaida({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
@@ -59,6 +68,7 @@ const NAV = [
   { href: "/admin/clientes", label: "Clientes", Icone: IconePessoas, base: "/admin/clientes" },
   { href: "/admin/emails", label: "E-mails", Icone: IconeEnvelope, base: "/admin/emails" },
   { href: "/admin/leads", label: "Newsletter", Icone: IconeEstrela, base: "/admin/leads" },
+  { href: "/admin/categorias", label: "Banners", Icone: IconeImagem, base: "/admin/categorias" },
 ];
 
 export default function AdminLayout({

@@ -7,6 +7,7 @@ import ProdutoCard from "../components/ProdutoCard";
 
 export default function Home() {
   const { data: lista } = trpc.produtos.listar.useQuery();
+  const { data: banners } = trpc.categorias.listarBanners.useQuery();
   const destaques = (lista ?? []).slice(0, 4);
 
   return (
@@ -46,19 +47,23 @@ export default function Home() {
 
       {/* Tiles de categoria — entrada visual pro catálogo, não só texto */}
       <section className="mx-auto -mt-10 grid max-w-6xl gap-6 px-6 md:-mt-16 md:grid-cols-3 md:gap-8">
-        {CATEGORIAS.map((cat) => (
-          <Link
-            key={cat.valor}
-            href={`/catalogo/${cat.valor}`}
-            className="group relative flex h-48 items-end overflow-hidden rounded-2xl bg-marrom-escuro p-6 shadow-lg md:h-64"
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-carvao/80 via-carvao/20 to-transparent transition group-hover:from-carvao/90" />
-            <div className="relative">
-              <p className="font-serif text-2xl text-creme">{cat.label}</p>
-              <p className="mt-1 text-sm text-creme/70">{cat.descricao}</p>
-            </div>
-          </Link>
-        ))}
+        {CATEGORIAS.map((cat) => {
+          const banner = banners?.[cat.valor];
+          return (
+            <Link
+              key={cat.valor}
+              href={`/catalogo/${cat.valor}`}
+              className="group relative flex h-48 items-end overflow-hidden rounded-2xl bg-marrom-escuro bg-cover bg-center p-6 shadow-lg transition md:h-64"
+              style={banner ? { backgroundImage: `url(${banner})` } : undefined}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-carvao/85 via-carvao/25 to-transparent transition group-hover:from-carvao/95" />
+              <div className="relative">
+                <p className="font-serif text-2xl text-creme">{cat.label}</p>
+                <p className="mt-1 text-sm text-creme/70">{cat.descricao}</p>
+              </div>
+            </Link>
+          );
+        })}
       </section>
 
       {destaques.length > 0 && (

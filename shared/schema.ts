@@ -311,3 +311,14 @@ export const mensagensContato = pgTable("mensagens_contato", {
   lida: boolean("lida").notNull().default(false),
   criadoEm: timestamp("criado_em").defaultNow().notNull(),
 });
+
+// ──────────────────────────────────────────────────────────
+// BANNERS DE CATEGORIA (foto de fundo dos tiles "Pronta Entrega",
+// "Personalizados", "Casa" na Home) — editável pelo admin
+// ──────────────────────────────────────────────────────────
+
+export const categoriaBanners = pgTable("categoria_banners", {
+  categoria: varchar("categoria", { length: 40 }).primaryKey(),
+  imagemUrl: text("imagem_url"),
+  atualizadoEm: timestamp("atualizado_em").defaultNow().notNull(),
+});

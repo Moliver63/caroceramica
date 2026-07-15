@@ -61,10 +61,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Link href="/" className="flex items-center gap-2.5">
           <img src="/marca/icone.png" alt="" className="h-9 w-9" aria-hidden="true" />
-          <span className="flex items-baseline gap-1.5">
-            <span className="font-serif text-xl text-marrom-escuro">Caro Vargas</span>
-            <span className="eyebrow text-[0.65rem] text-marrom/60">Cerâmica</span>
-          </span>
+          <img src="/marca/wordmark.png" alt="Caro Vargas Cerâmica" className="h-6 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">

@@ -23,8 +23,8 @@ export default function AdminLogin() {
           <div className="flex items-center gap-2.5">
             <img src="/marca/icone.png" alt="" className="h-8 w-8" />
             <div>
-              <p className="font-serif text-lg leading-none text-[#2B2420]">Caro Vargas</p>
-              <p className="mt-1 text-[0.65rem] uppercase tracking-wide leading-none text-[#8C7A6B]">
+              <img src="/marca/wordmark.png" alt="Caro Vargas Cerâmica" className="h-4 w-auto" />
+              <p className="mt-1.5 text-[0.65rem] uppercase tracking-wide leading-none text-[#8C7A6B]">
                 Painel administrativo
               </p>
             </div>

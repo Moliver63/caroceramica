@@ -19,7 +19,7 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-2.5">
             <img src="/marca/icone-creme.png" alt="" className="h-8 w-8" aria-hidden="true" />
-            <p className="font-serif text-2xl text-creme">Caro Vargas</p>
+            <img src="/marca/wordmark-creme.png" alt="Caro Vargas Cerâmica" className="h-6 w-auto" />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
             Peças de cerâmica feitas à mão, uma a uma, no torno. Cada uma leva o

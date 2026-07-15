@@ -22,8 +22,9 @@ export default function Footer() {
             <img src="/marca/wordmark-creme.png" alt="Caro Vargas Cerâmica" className="h-4 w-auto" />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed">
-            Peças de cerâmica feitas à mão, uma a uma, no torno. Cada uma leva o
-            tempo que precisa — e carrega pequenas variações que são prova disso.
+            Peças de cerâmica feitas à mão, uma a uma, com muito carinho e dedicação.
+            Cada uma leva o tempo que precisa e pode carregar pequenas variações de
+            forma, tamanho e cor, pois são artesanais.
           </p>
         </div>
 

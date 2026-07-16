@@ -91,6 +91,9 @@ export default function AdminLayout({
   const [location] = useLocation();
   const [menuAberto, setMenuAberto] = useState(false);
   const utils = trpc.useUtils();
+  const { data: naoLidas = 0 } = trpc.mensagens.contarNaoLidas.useQuery(undefined, {
+    refetchInterval: 30_000, // confere a cada 30s, sem precisar recarregar a página
+  });
   const logout = trpc.admin.logout.useMutation({
     onSuccess: () => utils.admin.sessaoAtual.invalidate(),
   });
@@ -113,7 +116,12 @@ export default function AdminLayout({
                 }`}
               >
                 <Icone className="h-[18px] w-[18px]" />
-                {label}
+                <span className="flex-1">{label}</span>
+                {href === "/admin/emails" && naoLidas > 0 && (
+                  <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-terracota px-1.5 text-[0.65rem] font-semibold text-white">
+                    {naoLidas > 99 ? "99+" : naoLidas}
+                  </span>
+                )}
               </Link>
             );
           })}

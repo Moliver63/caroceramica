@@ -1,0 +1,1 @@
+ALTER TABLE "mensagens_contato" ADD COLUMN "anexos" jsonb;

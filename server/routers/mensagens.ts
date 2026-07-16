@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { mensagensContato, mensagensEnviadas } from "../../shared/schema";
-import { enviarEmail, emailRespostaContato } from "../lib/email";
+import { enviarEmail, emailRespostaContato, getResend } from "../lib/email";
 import { ENV } from "../_core/env";
 import { adminProcedure, router } from "../_core/trpc";
 
@@ -43,12 +43,38 @@ export const mensagensRouter = router({
     });
   }),
 
+  // ── Contagem de não lidas — pro badge no menu lateral ─────────
+  contarNaoLidas: adminProcedure.query(async () => {
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(mensagensContato)
+      .where(
+        and(
+          eq(mensagensContato.lida, false),
+          eq(mensagensContato.arquivada, false),
+          eq(mensagensContato.excluida, false)
+        )
+      );
+    return total;
+  }),
+
   marcarComoLida: adminProcedure
     .input(z.object({ id: z.number().int() }))
     .mutation(async ({ input }) => {
       await db
         .update(mensagensContato)
         .set({ lida: true })
+        .where(eq(mensagensContato.id, input.id));
+      return { sucesso: true as const };
+    }),
+
+  // ── Voltar a marcar como não lida (qualquer webmail de verdade tem) ──
+  marcarComoNaoLida: adminProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input }) => {
+      await db
+        .update(mensagensContato)
+        .set({ lida: false })
         .where(eq(mensagensContato.id, input.id));
       return { sucesso: true as const };
     }),
@@ -82,9 +108,84 @@ export const mensagensRouter = router({
       return { sucesso: true as const };
     }),
 
+  // ── Link fresco pra baixar um anexo — o link que o Resend dá expira,
+  //    então buscamos um novo toda vez que o admin clica em baixar ──
+  buscarLinkAnexo: adminProcedure
+    .input(z.object({ mensagemId: z.number().int(), anexoId: z.string() }))
+    .query(async ({ input }) => {
+      const mensagem = await db.query.mensagensContato.findFirst({
+        where: eq(mensagensContato.id, input.mensagemId),
+      });
+      if (!mensagem?.resendEmailId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Mensagem não encontrada" });
+      }
+
+      const resend = getResend();
+      if (!resend) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Resend não configurado no servidor.",
+        });
+      }
+
+      const { data, error } = await resend.emails.receiving.attachments.get({
+        emailId: mensagem.resendEmailId,
+        id: input.anexoId,
+      });
+
+      if (error || !data) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Não foi possível gerar o link do anexo agora.",
+        });
+      }
+
+      return { url: data.download_url };
+    }),
+
+  // ── Encaminhar a mensagem original pra outro e-mail — usa o
+  //    encaminhamento nativo do Resend (passthrough preserva o
+  //    e-mail original inteiro, incluindo anexos) ──
+  encaminhar: adminProcedure
+    .input(z.object({ id: z.number().int(), para: z.string().email() }))
+    .mutation(async ({ input }) => {
+      const mensagem = await db.query.mensagensContato.findFirst({
+        where: eq(mensagensContato.id, input.id),
+      });
+      if (!mensagem?.resendEmailId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Mensagem não encontrada" });
+      }
+
+      const resend = getResend();
+      if (!resend) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Resend não configurado no servidor.",
+        });
+      }
+
+      const { error } = await resend.emails.receiving.forward({
+        emailId: mensagem.resendEmailId,
+        to: input.para,
+        from: ENV.emailContato,
+        passthrough: true,
+      });
+
+      if (error) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Não foi possível encaminhar a mensagem agora.",
+        });
+      }
+
+      return { sucesso: true as const };
+    }),
+
   // ── Responder direto do admin — sai com a assinatura da marca,
-  //    do endereço contato@carovargas.com.br, e fica salva em
-  //    "Enviados" (antes simplesmente sumia depois de enviada) ──
+  //    do endereço contato@carovargas.com.br, cita a mensagem
+  //    original (padrão de qualquer cliente de e-mail), e fica
+  //    salva em "Enviados" (antes simplesmente sumia depois de
+  //    enviada) ──
   responder: adminProcedure
     .input(z.object({ id: z.number().int(), corpo: z.string().min(1) }))
     .mutation(async ({ input }) => {
@@ -102,10 +203,21 @@ export const mensagensRouter = router({
         ? assuntoOriginal
         : `Re: ${assuntoOriginal || "sua mensagem"}`;
 
+      const corpoOriginal = mensagem.corpoTexto?.trim();
+
       const enviado = await enviarEmail({
         para: enderecoDestino,
         assunto: assuntoResposta,
-        html: emailRespostaContato({ corpoResposta: input.corpo }),
+        html: emailRespostaContato({
+          corpoResposta: input.corpo,
+          citacao: corpoOriginal
+            ? {
+                remetente: mensagem.remetente,
+                data: mensagem.criadoEm.toLocaleString("pt-BR"),
+                corpo: corpoOriginal,
+              }
+            : undefined,
+        }),
         remetente: ENV.emailContato,
         responderPara: ENV.emailContato,
       });

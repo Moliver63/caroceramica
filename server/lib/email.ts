@@ -205,11 +205,24 @@ function escaparHtml(texto: string) {
  * contato@ — o texto vem cru de um textarea (sem HTML), por isso escapa
  * antes de virar HTML, e sempre fecha com a assinatura da marca.
  */
-export function emailRespostaContato(params: { corpoResposta: string }) {
+export function emailRespostaContato(params: {
+  corpoResposta: string;
+  citacao?: { remetente: string; data: string; corpo: string };
+}) {
   return `
     <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; color: #4A3B31; font-size: 15px; line-height: 1.6;">
       <div>${escaparHtml(params.corpoResposta)}</div>
       ${assinaturaContatoHtml()}
+      ${
+        params.citacao
+          ? `
+        <div style="margin-top: 24px; padding-left: 12px; border-left: 2px solid #E4D9CC; color: #8C7A6B; font-size: 13px;">
+          <p style="margin: 0 0 6px;">Em ${params.citacao.data}, ${escaparHtml(params.citacao.remetente)} escreveu:</p>
+          <div>${escaparHtml(params.citacao.corpo)}</div>
+        </div>
+      `
+          : ""
+      }
     </div>
   `;
 }

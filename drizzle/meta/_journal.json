@@ -71,6 +71,13 @@
       "when": 1784133512100,
       "tag": "0009_omniscient_wrecking_crew",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784218287273,
+      "tag": "0010_parallel_venom",
+      "breakpoints": true
     }
   ]
 }

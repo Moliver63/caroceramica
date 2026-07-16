@@ -7,6 +7,8 @@ import { Card, Botao, Badge, EmptyState, Label, campoBase } from "./AdminUI";
 
 type Pasta = "entrada" | "enviados" | "arquivadas" | "excluidas";
 
+type Anexo = { id: string; filename: string; size: number; contentType: string };
+
 type Mensagem = {
   id: number;
   remetente: string;
@@ -14,6 +16,7 @@ type Mensagem = {
   assunto: string | null;
   corpoTexto: string | null;
   corpoHtml: string | null;
+  anexos: Anexo[] | null;
   lida: boolean;
   respondida: boolean;
   arquivada: boolean;
@@ -54,6 +57,46 @@ const PASTAS: { valor: Pasta; label: string }[] = [
   { valor: "excluidas", label: "Lixeira" },
 ];
 
+function formatarTamanho(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function LinhaAnexo({ mensagemId, anexo }: { mensagemId: number; anexo: Anexo }) {
+  const utils = trpc.useUtils();
+  const [baixando, setBaixando] = useState(false);
+
+  async function baixar() {
+    setBaixando(true);
+    try {
+      const { url } = await utils.client.mensagens.buscarLinkAnexo.query({
+        mensagemId,
+        anexoId: anexo.id,
+      });
+      window.open(url, "_blank");
+    } catch {
+      alert("Não foi possível baixar o anexo agora. Tente de novo.");
+    } finally {
+      setBaixando(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={baixar}
+      disabled={baixando}
+      className="flex items-center gap-2 rounded-lg border border-black/10 bg-white px-3 py-2 text-left text-xs text-[#2B2420] hover:bg-black/[0.02] disabled:opacity-50"
+    >
+      <span aria-hidden="true">📎</span>
+      <span className="min-w-0 flex-1 truncate">{anexo.filename}</span>
+      <span className="flex-shrink-0 text-[#8C7A6B]">
+        {baixando ? "Abrindo…" : formatarTamanho(anexo.size)}
+      </span>
+    </button>
+  );
+}
+
 function PainelLeituraRecebida({
   mensagem,
   pasta,
@@ -66,10 +109,14 @@ function PainelLeituraRecebida({
   const utils = trpc.useUtils();
   const [resposta, setResposta] = useState("");
   const [enviado, setEnviado] = useState(false);
+  const [encaminhando, setEncaminhando] = useState(false);
+  const [emailEncaminhar, setEmailEncaminhar] = useState("");
+  const [encaminhado, setEncaminhado] = useState(false);
 
   function invalidarTudo() {
     utils.mensagens.listar.invalidate();
     utils.mensagens.listarEnviadas.invalidate();
+    utils.mensagens.contarNaoLidas.invalidate();
   }
 
   const arquivar = trpc.mensagens.arquivar.useMutation({
@@ -88,6 +135,18 @@ function PainelLeituraRecebida({
     onSuccess: () => {
       invalidarTudo();
       onVoltouMobile();
+    },
+  });
+  const marcarComoNaoLida = trpc.mensagens.marcarComoNaoLida.useMutation({
+    onSuccess: () => {
+      invalidarTudo();
+      onVoltouMobile();
+    },
+  });
+  const encaminhar = trpc.mensagens.encaminhar.useMutation({
+    onSuccess: () => {
+      setEncaminhado(true);
+      setEmailEncaminhar("");
     },
   });
   const responder = trpc.mensagens.responder.useMutation({
@@ -138,6 +197,12 @@ function PainelLeituraRecebida({
               </>
             ) : (
               <>
+                <Botao variante="fantasma" onClick={() => marcarComoNaoLida.mutate({ id: mensagem.id })}>
+                  Não lida
+                </Botao>
+                <Botao variante="fantasma" onClick={() => setEncaminhando((v) => !v)}>
+                  Encaminhar
+                </Botao>
                 <Botao
                   variante="fantasma"
                   onClick={() => arquivar.mutate({ id: mensagem.id, arquivada: !mensagem.arquivada })}
@@ -154,6 +219,32 @@ function PainelLeituraRecebida({
         <p className="mt-2 text-xs text-[#8C7A6B]">
           {new Date(mensagem.criadoEm).toLocaleString("pt-BR")}
         </p>
+
+        {encaminhando && (
+          <div className="mt-3 flex flex-col gap-2 rounded-lg border border-black/10 bg-black/[0.015] p-3 sm:flex-row sm:items-center">
+            <input
+              type="email"
+              value={emailEncaminhar}
+              onChange={(e) => {
+                setEmailEncaminhar(e.target.value);
+                setEncaminhado(false);
+              }}
+              placeholder="Encaminhar pra qual e-mail?"
+              className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[#2B2420] outline-none focus:border-terracota focus:ring-1 focus:ring-terracota"
+            />
+            <Botao
+              variante="secundario"
+              disabled={!emailEncaminhar.trim() || encaminhar.isPending}
+              onClick={() => encaminhar.mutate({ id: mensagem.id, para: emailEncaminhar })}
+            >
+              {encaminhar.isPending ? "Enviando…" : "Enviar"}
+            </Botao>
+          </div>
+        )}
+        {encaminhado && <p className="mt-2 text-xs font-medium text-esmalte">Encaminhado ✓</p>}
+        {encaminhar.isError && (
+          <p className="mt-2 text-xs text-red-600">{encaminhar.error.message}</p>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 text-sm text-[#2B2420]">
@@ -168,6 +259,17 @@ function PainelLeituraRecebida({
           />
         ) : (
           <p className="whitespace-pre-wrap">{mensagem.corpoTexto || "(sem conteúdo)"}</p>
+        )}
+
+        {mensagem.anexos && mensagem.anexos.length > 0 && (
+          <div className="mt-5 space-y-2 border-t border-black/5 pt-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-[#8C7A6B]">
+              {mensagem.anexos.length} {mensagem.anexos.length === 1 ? "anexo" : "anexos"}
+            </p>
+            {mensagem.anexos.map((anexo) => (
+              <LinhaAnexo key={anexo.id} mensagemId={mensagem.id} anexo={anexo} />
+            ))}
+          </div>
         )}
       </div>
 
@@ -465,6 +567,7 @@ function Inbox() {
                         </span>
                       </span>
                       <span className={`mt-0.5 block truncate text-xs ${naoLida ? "font-medium text-[#2B2420]" : "text-[#8C7A6B]"}`}>
+                        {ehRecebida && m.anexos && m.anexos.length > 0 && "📎 "}
                         {m.assunto || "(sem assunto)"}
                       </span>
                       <span className="mt-0.5 block truncate text-xs text-[#8C7A6B]/80">

@@ -309,6 +309,12 @@ export const mensagensContato = pgTable("mensagens_contato", {
   assunto: varchar("assunto", { length: 250 }),
   corpoTexto: text("corpo_texto"),
   corpoHtml: text("corpo_html"),
+  // Metadados dos anexos — [{id, filename, size, contentType}]. O link de
+  // download do Resend expira, então guardamos só os metadados aqui e
+  // buscamos um link fresco na hora que o admin quiser baixar.
+  anexos: jsonb("anexos").$type<
+    { id: string; filename: string; size: number; contentType: string }[]
+  >(),
   lida: boolean("lida").notNull().default(false),
   respondida: boolean("respondida").notNull().default(false),
   arquivada: boolean("arquivada").notNull().default(false),

@@ -75,6 +75,15 @@ resendWebhookRouter.post("/", async (req, res) => {
         assunto: email.subject ?? "(sem assunto)",
         corpoTexto: email.text ?? null,
         corpoHtml: email.html ?? null,
+        anexos:
+          email.attachments && email.attachments.length > 0
+            ? email.attachments.map((a) => ({
+                id: a.id,
+                filename: a.filename ?? "arquivo",
+                size: a.size,
+                contentType: a.content_type,
+              }))
+            : null,
       });
     }
 

@@ -107,7 +107,7 @@ function PainelLeituraRecebida({
         >
           ‹ Voltar pra lista
         </button>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="text-base font-semibold text-[#2B2420]">
               {mensagem.assunto || "(sem assunto)"}
@@ -117,7 +117,7 @@ function PainelLeituraRecebida({
               <span className="text-[#8C7A6B]"> · {mensagem.remetente.match(/<(.+)>/)?.[1] ?? mensagem.remetente}</span>
             </p>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {mensagem.respondida && <Badge cor="bg-esmalte-claro text-esmalte">Respondida</Badge>}
 
             {pasta === "excluidas" ? (
@@ -186,7 +186,7 @@ function PainelLeituraRecebida({
             placeholder="Escreva sua resposta…"
             className="mt-2 w-full rounded-lg border border-black/10 bg-white px-3.5 py-2.5 text-sm text-[#2B2420] outline-none focus:border-terracota focus:ring-1 focus:ring-terracota"
           />
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-[#8C7A6B]">
               A assinatura da Caro Vargas (com logo) é adicionada automaticamente.
             </p>
@@ -313,7 +313,7 @@ function Compositor({ onFechar, onEnviado }: { onFechar: () => void; onEnviado: 
       </div>
 
       <div className="border-t border-black/5 bg-black/[0.015] p-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-[#8C7A6B]">
             Sai de contato@carovargas.com.br, com a assinatura da marca automática.
           </p>

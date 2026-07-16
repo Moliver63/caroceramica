@@ -304,7 +304,7 @@ function Formulario() {
             Preço sob consulta (não mostra valor fixo na vitrine)
           </label>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <div className="flex-1">
               <Label>Preço base (R$){precoSobConsulta && " — opcional"}</Label>
               <input
@@ -373,7 +373,7 @@ function Formulario() {
           </label>
 
           {personalizavel && (
-            <div className="flex gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex-1">
                 <Label>Tipo</Label>
                 <select

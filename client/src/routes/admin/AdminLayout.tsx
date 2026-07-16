@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "../../lib/trpc";
 
@@ -62,6 +62,14 @@ function IconeSaida({ className }: { className?: string }) {
   );
 }
 
+function IconeMenu({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const NAV = [
   { href: "/admin/produtos", label: "Produtos", Icone: IconeCasa, base: "/admin/produtos" },
   { href: "/admin/pedidos", label: "Pedidos", Icone: IconeCaixa, base: "/admin/pedidos" },
@@ -81,23 +89,15 @@ export default function AdminLayout({
   children: ReactNode;
 }) {
   const [location] = useLocation();
+  const [menuAberto, setMenuAberto] = useState(false);
   const utils = trpc.useUtils();
   const logout = trpc.admin.logout.useMutation({
     onSuccess: () => utils.admin.sessaoAtual.invalidate(),
   });
 
-  return (
-    <div className="flex min-h-screen bg-[#F5F4F1]">
-      {/* Sidebar */}
-      <aside className="hidden w-60 flex-shrink-0 flex-col bg-carvao text-creme/80 md:flex">
-        <div className="flex items-center gap-2.5 px-6 py-6">
-          <img src="/marca/icone-creme.png" alt="" className="h-7 w-7" aria-hidden="true" />
-          <div>
-            <p className="font-serif text-base leading-none text-creme">Caro Vargas</p>
-            <p className="eyebrow mt-1 text-[0.6rem] leading-none text-creme/40">Painel admin</p>
-          </div>
-        </div>
-
+  function ConteudoNav({ onNavegar }: { onNavegar?: () => void }) {
+    return (
+      <>
         <nav className="mt-2 flex flex-1 flex-col gap-0.5 px-3">
           {NAV.map(({ href, label, Icone, base }) => {
             const ativo = location.startsWith(base);
@@ -105,6 +105,7 @@ export default function AdminLayout({
               <Link
                 key={href}
                 href={href}
+                onClick={onNavegar}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
                   ativo
                     ? "bg-creme/10 font-medium text-creme"
@@ -121,39 +122,94 @@ export default function AdminLayout({
         <div className="border-t border-creme/10 px-3 py-3">
           <Link
             href="/"
+            onClick={onNavegar}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-creme/50 transition hover:bg-creme/5 hover:text-creme"
           >
             ‹ Ver site
           </Link>
           <button
-            onClick={() => logout.mutate()}
+            onClick={() => {
+              onNavegar?.();
+              logout.mutate();
+            }}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-creme/50 transition hover:bg-creme/5 hover:text-creme"
           >
             <IconeSaida className="h-[18px] w-[18px]" />
             Sair
           </button>
         </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-[#F5F4F1]">
+      {/* Sidebar — telas médias pra cima */}
+      <aside className="hidden w-60 flex-shrink-0 flex-col bg-carvao text-creme/80 md:flex">
+        <div className="flex items-center gap-2.5 px-6 py-6">
+          <img src="/marca/icone-creme.png" alt="" className="h-7 w-7" aria-hidden="true" />
+          <div>
+            <p className="font-serif text-base leading-none text-creme">Caro Vargas</p>
+            <p className="eyebrow mt-1 text-[0.6rem] leading-none text-creme/40">Painel admin</p>
+          </div>
+        </div>
+        <ConteudoNav />
       </aside>
+
+      {/* Menu mobile — desliza de cima, mesmos links da sidebar */}
+      {menuAberto && (
+        <div className="fixed inset-0 z-[70] flex md:hidden">
+          <button
+            aria-label="Fechar menu"
+            onClick={() => setMenuAberto(false)}
+            className="absolute inset-0 bg-black/40"
+          />
+          <aside className="relative flex h-full w-72 max-w-[80vw] flex-col bg-carvao text-creme/80 shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-6">
+              <div className="flex items-center gap-2.5">
+                <img src="/marca/icone-creme.png" alt="" className="h-7 w-7" aria-hidden="true" />
+                <div>
+                  <p className="font-serif text-base leading-none text-creme">Caro Vargas</p>
+                  <p className="eyebrow mt-1 text-[0.6rem] leading-none text-creme/40">Painel admin</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMenuAberto(false)}
+                aria-label="Fechar"
+                className="text-2xl leading-none text-creme/60"
+              >
+                ×
+              </button>
+            </div>
+            <ConteudoNav onNavegar={() => setMenuAberto(false)} />
+          </aside>
+        </div>
+      )}
 
       {/* Conteúdo */}
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Topbar mobile (sidebar vira topo em telas pequenas) */}
+        {/* Topbar mobile — agora com acesso a todo o menu */}
         <div className="flex items-center justify-between border-b border-black/5 bg-white px-4 py-3 md:hidden">
-          <Link href="/admin/produtos" className="flex items-center gap-2">
+          <button
+            onClick={() => setMenuAberto(true)}
+            aria-label="Abrir menu"
+            className="flex items-center gap-2 text-marrom-escuro"
+          >
+            <IconeMenu className="h-5 w-5" />
             <img src="/marca/icone.png" alt="" className="h-6 w-6" />
-            <span className="font-serif text-sm text-marrom-escuro">Admin</span>
-          </Link>
+            <span className="font-serif text-sm">Admin</span>
+          </button>
           <Link href="/" className="text-xs text-marrom hover:text-terracota">
             Ver site
           </Link>
         </div>
 
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 bg-white px-6 py-5 md:px-10">
-          <h1 className="text-xl font-semibold text-[#2B2420]">{titulo}</h1>
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 bg-white px-4 py-4 sm:px-6 sm:py-5 md:px-10">
+          <h1 className="text-lg font-semibold text-[#2B2420] sm:text-xl">{titulo}</h1>
           {acoes && <div className="flex flex-wrap gap-2">{acoes}</div>}
         </header>
 
-        <main className="flex-1 px-6 py-8 md:px-10">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 md:px-10">{children}</main>
       </div>
     </div>
   );

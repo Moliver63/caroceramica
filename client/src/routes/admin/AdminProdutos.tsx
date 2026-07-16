@@ -24,8 +24,8 @@ function ListaProdutos() {
       )}
 
       {produtos.length > 0 && (
-        <Card className="overflow-hidden">
-          <table className="w-full text-sm">
+        <Card className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-black/5 bg-black/[0.02] text-left text-xs uppercase tracking-wide text-[#8C7A6B]">
                 <th className="px-5 py-3 font-medium">Peça</th>

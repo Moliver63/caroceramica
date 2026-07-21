@@ -7,6 +7,8 @@ import { labelCategoria } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CarrosselImagens from "../components/CarrosselImagens";
+import Seo from "../components/Seo";
+import { jsonLdSeguro } from "../lib/jsonld";
 
 export default function ProdutoDetalhe() {
   const { slug } = useParams();
@@ -85,6 +87,42 @@ export default function ProdutoDetalhe() {
 
   return (
     <div>
+      <Seo
+        titulo={produto.nome}
+        descricao={
+          produto.descricao ??
+          `${produto.nome} — peça de cerâmica artesanal feita à mão pela Caro Vargas Cerâmica.`
+        }
+        caminho={`/produto/${produto.slug}`}
+        imagem={produto.imagens?.[0]}
+      />
+      {/* Schema.org Product — ajuda o Google a mostrar preço/disponibilidade
+          direto no resultado de busca (rich snippet) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdSeguro({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: produto.nome,
+            description: produto.descricao ?? undefined,
+            image: produto.imagens && produto.imagens.length > 0 ? produto.imagens : undefined,
+            brand: { "@type": "Brand", name: "Caro Vargas Cerâmica" },
+            ...(!produto.precoSobConsulta && {
+              offers: {
+                "@type": "Offer",
+                url: `https://carovargas.com.br/produto/${produto.slug}`,
+                priceCurrency: "BRL",
+                price: precoFinal.toFixed(2),
+                availability:
+                  produto.controlarEstoque && produto.estoque === 0
+                    ? "https://schema.org/OutOfStock"
+                    : "https://schema.org/InStock",
+              },
+            }),
+          }),
+        }}
+      />
       <Header />
       <div className="mx-auto max-w-5xl px-6 pt-8">
         <nav className="flex flex-wrap items-center gap-1.5 text-sm text-marrom">

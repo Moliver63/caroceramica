@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useCarrinho } from "../lib/carrinho-context";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 export default function Carrinho() {
   const { itens, removerItem, atualizarQuantidade, subtotal } = useCarrinho();
@@ -10,6 +11,7 @@ export default function Carrinho() {
   if (itens.length === 0) {
     return (
       <div>
+        <Seo titulo="Carrinho" descricao="Seu carrinho na Caro Vargas Cerâmica." caminho="/carrinho" semIndexar />
         <Header />
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
           <p className="text-marrom">Seu carrinho está vazio.</p>
@@ -24,6 +26,7 @@ export default function Carrinho() {
 
   return (
     <div>
+      <Seo titulo="Carrinho" descricao="Seu carrinho na Caro Vargas Cerâmica." caminho="/carrinho" semIndexar />
       <Header />
 
       <div className="mx-auto max-w-3xl px-6 py-12">

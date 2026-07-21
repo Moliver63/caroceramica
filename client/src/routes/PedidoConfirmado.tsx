@@ -1,12 +1,19 @@
 import { useParams, Link } from "wouter";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 export default function PedidoConfirmado() {
   const { codigo } = useParams();
 
   return (
     <div>
+      <Seo
+        titulo="Pedido confirmado"
+        descricao="Seu pedido na Caro Vargas Cerâmica foi confirmado."
+        caminho={`/pedido/${codigo ?? ""}`}
+        semIndexar
+      />
       <Header />
 
       <div className="mx-auto max-w-xl px-6 py-20 text-center">

@@ -10,6 +10,8 @@ import { ENV } from "./env";
 import asaasWebhookRouter from "../routes/asaas-webhook";
 import resendWebhookRouter from "../routes/resend-webhook";
 import cronRouter from "../routes/cron";
+import sitemapRouter from "../routes/sitemap";
+import socialPreviewRouter from "../routes/social-preview";
 
 async function startServer() {
   const app = express();
@@ -41,6 +43,14 @@ async function startServer() {
 
   // Endpoints de cron (verificação periódica, chamados por serviço externo)
   app.use("/api/cron", cronRouter);
+
+  // sitemap.xml — gerado na hora a partir dos produtos ativos reais
+  app.use("/sitemap.xml", sitemapRouter);
+
+  // Prévia de link pra bots de redes sociais (WhatsApp, Facebook, etc.)
+  // que não executam JavaScript — precisa vir antes do serveStatic/Vite,
+  // que serviria a SPA normal (sem os meta tags certos) pra qualquer um.
+  app.use(socialPreviewRouter);
 
   // API tRPC — todas as chamadas do client passam por aqui
   app.use(

@@ -4,6 +4,8 @@ import { CATEGORIAS } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
+import Seo from "../components/Seo";
+import { jsonLdSeguro } from "../lib/jsonld";
 
 export default function Home() {
   const { data: lista } = trpc.produtos.listar.useQuery();
@@ -12,6 +14,11 @@ export default function Home() {
 
   return (
     <div>
+      <Seo
+        titulo="Caro Vargas Cerâmica | Peças artesanais feitas à mão"
+        descricao="Cerâmica artesanal feita à mão em Balneário Camboriú/SC. Peças de pronta entrega e personalizadas — cada uma única, feita no torno, para casa e presentes."
+        caminho="/"
+      />
       <Header />
 
       {/* Hero — banda com o divisor orgânico como elemento de assinatura */}
@@ -78,7 +85,74 @@ export default function Home() {
         </section>
       )}
 
+      <section className="mx-auto max-w-3xl px-6 py-20">
+        <p className="eyebrow text-marrom/60">Dúvidas frequentes</p>
+        <h2 className="mb-8 mt-1 font-serif text-2xl text-marrom-escuro">Perguntas frequentes</h2>
+        <div className="space-y-6">
+          {FAQ.map((item) => (
+            <div key={item.pergunta} className="border-b border-borda pb-6">
+              <p className="font-medium text-marrom-escuro">{item.pergunta}</p>
+              <p className="mt-2 text-sm leading-relaxed text-marrom">{item.resposta}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Schema.org FAQPage — ajuda o Google a mostrar as perguntas
+          direto no resultado de busca */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdSeguro({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQ.map((item) => ({
+              "@type": "Question",
+              name: item.pergunta,
+              acceptedAnswer: { "@type": "Answer", text: item.resposta },
+            })),
+          }),
+        }}
+      />
+
       <Footer />
     </div>
   );
 }
+
+const FAQ = [
+  {
+    pergunta: "Como funciona a personalização das peças?",
+    resposta:
+      "Nas peças personalizadas, você pode adicionar um carimbo exclusivo ou decalque com texto, iniciais ou logo. Na hora da compra, envia a arte (ou o texto) e recebe uma prova antes da produção começar.",
+  },
+  {
+    pergunta: "Qual o prazo de produção?",
+    resposta:
+      "Cada peça é feita à mão, uma de cada vez — o prazo varia conforme a complexidade, geralmente até 30 dias. O prazo exato de cada peça aparece na página do produto, antes de você finalizar a compra.",
+  },
+  {
+    pergunta: "Peças de pronta entrega saem mais rápido?",
+    resposta:
+      "Sim. As peças da categoria 'Pronta Entrega' já estão prontas no ateliê e vão direto pro envio, sem esperar o tempo de produção das personalizadas.",
+  },
+  {
+    pergunta: "Como funciona o frete?",
+    resposta:
+      "O frete é calculado pelo CEP de entrega direto no carrinho, antes de você finalizar a compra — sem surpresa no final.",
+  },
+  {
+    pergunta: "As peças têm variações entre si?",
+    resposta:
+      "Sim, e é assim de propósito: como cada peça é moldada à mão no torno, pequenas variações de forma, tom e textura são naturais — é o que garante que a sua peça seja única, não uma cópia idêntica de outras 500.",
+  },
+  {
+    pergunta: "Quais as formas de pagamento?",
+    resposta: "Pix, boleto ou cartão de crédito, direto no checkout do site.",
+  },
+  {
+    pergunta: "Como acompanho meu pedido depois da compra?",
+    resposta:
+      "Você recebe atualizações por e-mail em cada etapa (pedido recebido, em produção, enviado) e também pode consultar o status a qualquer momento na página de Rastreamento, com o código do pedido e o e-mail usado na compra.",
+  },
+];

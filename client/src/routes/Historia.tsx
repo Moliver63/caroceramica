@@ -1,9 +1,15 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 export default function Historia() {
   return (
     <div>
+      <Seo
+        titulo="Nossa história"
+        descricao="Conheça a história por trás da Caro Vargas Cerâmica — peças feitas à mão, uma a uma, no torno."
+        caminho="/historia"
+      />
       <Header />
 
       <section className="mx-auto max-w-2xl px-6 py-16">

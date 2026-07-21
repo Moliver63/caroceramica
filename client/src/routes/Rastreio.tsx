@@ -3,6 +3,7 @@ import { trpc } from "../lib/trpc";
 import { labelStatusPedido } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 export default function Rastreio() {
   const [codigoPedido, setCodigoPedido] = useState("");
@@ -22,6 +23,11 @@ export default function Rastreio() {
 
   return (
     <div>
+      <Seo
+        titulo="Rastrear pedido"
+        descricao="Acompanhe o status do seu pedido na Caro Vargas Cerâmica."
+        caminho="/rastreio"
+      />
       <Header />
 
       <section className="mx-auto max-w-lg px-6 py-16">

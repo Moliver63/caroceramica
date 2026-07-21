@@ -5,6 +5,7 @@ import { labelCategoria, type Categoria } from "@shared/const";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProdutoCard from "../components/ProdutoCard";
+import Seo from "../components/Seo";
 
 type Ordenacao = "relevancia" | "menor-preco" | "maior-preco" | "nome";
 
@@ -33,6 +34,11 @@ export default function Catalogo() {
 
   return (
     <div>
+      <Seo
+        titulo={`${titulo} — Cerâmica artesanal`}
+        descricao={`Confira as peças de ${titulo.toLowerCase()} da Caro Vargas Cerâmica — feitas à mão, uma a uma, no torno.`}
+        caminho={`/catalogo/${categoria}`}
+      />
       <Header />
 
       <section className="mx-auto max-w-6xl px-6 py-12">

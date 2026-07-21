@@ -5,6 +5,7 @@ import { trpc } from "../lib/trpc";
 import { validarDocumento, formatarDocumento } from "../lib/validadores";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Seo from "../components/Seo";
 
 export default function Checkout() {
   const { itens, subtotal, limparCarrinho } = useCarrinho();
@@ -134,6 +135,7 @@ export default function Checkout() {
 
   return (
     <div>
+      <Seo titulo="Checkout" descricao="Finalize seu pedido na Caro Vargas Cerâmica." caminho="/checkout" semIndexar />
       <Header />
 
       <div className="mx-auto max-w-2xl px-6 py-12">

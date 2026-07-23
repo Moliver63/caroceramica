@@ -9,6 +9,7 @@ import { clientesRouter } from "./routers/clientes";
 import { rastreioRouter } from "./routers/rastreio";
 import { mensagensRouter } from "./routers/mensagens";
 import { categoriasRouter } from "./routers/categorias";
+import { financeiroRouter } from "./routers/financeiro";
 
 export const appRouter = router({
   produtos: produtosRouter,
@@ -21,6 +22,7 @@ export const appRouter = router({
   rastreio: rastreioRouter,
   mensagens: mensagensRouter,
   categorias: categoriasRouter,
+  financeiro: financeiroRouter,
 });
 
 export type AppRouter = typeof appRouter;

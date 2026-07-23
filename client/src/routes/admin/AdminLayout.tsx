@@ -70,9 +70,18 @@ function IconeMenu({ className }: { className?: string }) {
   );
 }
 
+function IconeGrafico({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M4 20V10M11 20V4M18 20v-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const NAV = [
   { href: "/admin/produtos", label: "Produtos", Icone: IconeCasa, base: "/admin/produtos" },
   { href: "/admin/pedidos", label: "Pedidos", Icone: IconeCaixa, base: "/admin/pedidos" },
+  { href: "/admin/financeiro", label: "Financeiro", Icone: IconeGrafico, base: "/admin/financeiro" },
   { href: "/admin/clientes", label: "Clientes", Icone: IconePessoas, base: "/admin/clientes" },
   { href: "/admin/emails", label: "E-mails", Icone: IconeEnvelope, base: "/admin/emails" },
   { href: "/admin/leads", label: "Newsletter", Icone: IconeEstrela, base: "/admin/leads" },

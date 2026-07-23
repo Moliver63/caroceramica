@@ -62,7 +62,7 @@ export default function Footer() {
             >
               @carovargas.ceramica
             </a>
-            <p>Produção sob encomenda — prazo informado em cada peça.</p>
+            <p>Produção sob encomenda, prazo informado em cada peça.</p>
             <p>Pagamento via Pix, boleto ou cartão.</p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function Footer() {
 
       <div className="border-t border-creme/10 px-6 py-6 text-center text-xs text-creme/50">
         <p>
-          Cada peça possui pequenas variações de forma, textura e tonalidade —
+          Cada peça possui pequenas variações de forma, textura e tonalidade,
           marcas do processo artesanal e da singularidade de cada criação.
         </p>
         <p className="mt-2">© {new Date().getFullYear()} Caro Vargas Cerâmica. Feito à mão, com carinho.</p>

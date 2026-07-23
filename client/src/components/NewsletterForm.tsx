@@ -14,7 +14,7 @@ export default function NewsletterForm() {
   if (cadastrar.isSuccess) {
     return (
       <p className="text-sm text-creme/80">
-        Combinado — você vai receber nossas novidades por e-mail. 🌿
+        Combinado, você vai receber nossas novidades por e-mail. 🌿
       </p>
     );
   }

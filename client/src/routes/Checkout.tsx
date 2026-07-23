@@ -238,7 +238,7 @@ export default function Checkout() {
               {!calculandoFrete && frete?.encontrado && (
                 <>
                   Frete para {frete.regiao}: <strong>R$ {frete.valor.toFixed(2).replace(".", ",")}</strong>{" "}
-                  — chega em até {frete.prazoDias} dias úteis após a produção
+                  (chega em até {frete.prazoDias} dias úteis após a produção)
                 </>
               )}
               {!calculandoFrete && frete && !frete.encontrado && (

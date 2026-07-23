@@ -58,7 +58,7 @@ function envelopeHtml(conteudo: string) {
       <p style="font-size: 22px; color: #B08D6E; margin-bottom: 24px;">Caro Vargas Cerâmica</p>
       ${conteudo}
       <p style="margin-top: 32px; font-size: 13px; color: #8C7A6B;">
-        Feito à mão, com carinho — Caro Vargas Cerâmica
+        Feito à mão, com carinho. Caro Vargas Cerâmica
       </p>
     </div>
   `;
@@ -75,7 +75,7 @@ export function emailPedidoRecebido(params: {
     <p>
       Recebemos seu pedido <strong>${params.codigoPedido}</strong> e ele já está
       na fila de produção do nosso ateliê. Cada peça é feita à mão, uma de cada
-      vez — o prazo estimado de produção é de até <strong>${params.prazoProducaoDias} dias</strong>.
+      vez. O prazo estimado de produção é de até <strong>${params.prazoProducaoDias} dias</strong>.
     </p>
     <p>Assim que sua peça for despachada, você recebe um novo e-mail com o código de rastreio.</p>
   `);
@@ -106,7 +106,7 @@ export function emailBoasVindasNewsletter() {
     <h1 style="font-size: 20px; color: #4A3B31;">Bem-vindo(a) ao ateliê! 🌿</h1>
     <p>
       Obrigado por se cadastrar. A partir de agora você recebe em primeira mão
-      as novidades do ateliê — peças novas, promoções e histórias sobre o
+      as novidades do ateliê: peças novas, promoções e histórias sobre o
       processo de cada criação.
     </p>
     <p>Fica à vontade pra dar uma olhada no catálogo enquanto isso.</p>
@@ -133,8 +133,8 @@ export function emailPedidoEntregue(params: { nomeCliente: string; codigoPedido:
       foi entregue. Esperamos que a peça tenha chegado com carinho!
     </p>
     <p>
-      Se quiser compartilhar uma foto de como ficou na sua casa, adoraríamos ver —
-      é só responder este e-mail ou marcar a gente no Instagram.
+      Se quiser compartilhar uma foto de como ficou na sua casa, adoraríamos ver.
+      É só responder este e-mail ou marcar a gente no Instagram.
     </p>
   `);
 }
@@ -161,7 +161,7 @@ export function emailLembreteAbandono(params: { nomeCliente: string; codigoPedid
       o pagamento. Se ainda tiver interesse, é só concluir o pagamento pelo link
       que te enviamos, ou responder este e-mail que ajudamos.
     </p>
-    <p>Se já desistiu, sem problemas — pode ignorar esta mensagem.</p>
+    <p>Se já desistiu, sem problemas. Pode ignorar esta mensagem.</p>
   `);
 }
 

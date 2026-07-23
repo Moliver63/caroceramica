@@ -16,7 +16,7 @@ export default function Home() {
     <div>
       <Seo
         titulo="Caro Vargas Cerâmica | Peças artesanais feitas à mão"
-        descricao="Cerâmica artesanal feita à mão em Balneário Camboriú/SC. Peças de pronta entrega e personalizadas — cada uma única, feita no torno, para casa e presentes."
+        descricao="Cerâmica artesanal feita à mão em Balneário Camboriú/SC. Peças de pronta entrega e personalizadas, cada uma única, feita no torno, para casa e presentes."
         caminho="/"
       />
       <Header />
@@ -129,7 +129,7 @@ const FAQ = [
   {
     pergunta: "Qual o prazo de produção?",
     resposta:
-      "Cada peça é feita à mão, uma de cada vez — o prazo varia conforme a complexidade, geralmente até 30 dias. O prazo exato de cada peça aparece na página do produto, antes de você finalizar a compra.",
+      "Cada peça é feita à mão, uma de cada vez. O prazo varia conforme a complexidade, geralmente até 30 dias. O prazo exato de cada peça aparece na página do produto, antes de você finalizar a compra.",
   },
   {
     pergunta: "Peças de pronta entrega saem mais rápido?",
@@ -139,12 +139,12 @@ const FAQ = [
   {
     pergunta: "Como funciona o frete?",
     resposta:
-      "O frete é calculado pelo CEP de entrega direto no carrinho, antes de você finalizar a compra — sem surpresa no final.",
+      "O frete é calculado pelo CEP de entrega direto no carrinho, antes de você finalizar a compra.",
   },
   {
     pergunta: "As peças têm variações entre si?",
     resposta:
-      "Sim, e é assim de propósito: como cada peça é moldada à mão no torno, pequenas variações de forma, tom e textura são naturais — é o que garante que a sua peça seja única, não uma cópia idêntica de outras 500.",
+      "Sim, e é assim de propósito. Como cada peça é moldada à mão no torno, pequenas variações de forma, tom e textura são naturais. Isso garante que a sua peça seja única, não uma cópia idêntica de outras 500.",
   },
   {
     pergunta: "Quais as formas de pagamento?",

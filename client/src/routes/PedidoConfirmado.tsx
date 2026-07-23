@@ -28,7 +28,7 @@ export default function PedidoConfirmado() {
         </h1>
         <p className="mt-4 text-marrom">
           Assim que o pagamento for confirmado, sua peça entra em produção.
-          Peças artesanais têm prazo de produção de até 30 dias — vamos te
+          Peças artesanais têm prazo de produção de até 30 dias. Vamos te
           manter avisado por e-mail a cada etapa.
         </p>
 

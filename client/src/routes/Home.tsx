@@ -16,7 +16,7 @@ export default function Home() {
     <div>
       <Seo
         titulo="Caro Vargas Cerâmica | Peças artesanais feitas à mão"
-        descricao="Cerâmica artesanal feita à mão em Balneário Camboriú/SC. Peças de pronta entrega e personalizadas, cada uma única, feita no torno, para casa e presentes."
+        descricao="Cerâmica artesanal feita à mão em Balneário Camboriú/SC. Peças de pronta entrega e personalizadas, cada uma única, feita com muito carinho e dedicação, para casa e presentes."
         caminho="/"
       />
       <Header />
@@ -144,7 +144,7 @@ const FAQ = [
   {
     pergunta: "As peças têm variações entre si?",
     resposta:
-      "Sim, e é assim de propósito. Como cada peça é moldada à mão no torno, pequenas variações de forma, tom e textura são naturais. Isso garante que a sua peça seja única, não uma cópia idêntica de outras 500.",
+      "Sim, e é assim de propósito. Como cada peça é feita à mão, uma a uma, pequenas variações de forma, tamanho e cor são naturais, pois são artesanais. Isso garante que a sua peça seja única, não uma cópia idêntica de outras 500.",
   },
   {
     pergunta: "Quais as formas de pagamento?",

@@ -36,7 +36,7 @@ export default function Catalogo() {
     <div>
       <Seo
         titulo={`${titulo} — Cerâmica artesanal`}
-        descricao={`Confira as peças de ${titulo.toLowerCase()} da Caro Vargas Cerâmica, feitas à mão, uma a uma, no torno.`}
+        descricao={`Confira as peças de ${titulo.toLowerCase()} da Caro Vargas Cerâmica, feitas à mão, uma a uma, com muito carinho e dedicação.`}
         caminho={`/catalogo/${categoria}`}
       />
       <Header />

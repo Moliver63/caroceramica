@@ -7,7 +7,7 @@ export default function Historia() {
     <div>
       <Seo
         titulo="Nossa história"
-        descricao="Conheça a história por trás da Caro Vargas Cerâmica, peças feitas à mão, uma a uma, no torno."
+        descricao="Conheça a história por trás da Caro Vargas Cerâmica, peças de cerâmica feitas à mão, uma a uma, com muito carinho e dedicação."
         caminho="/historia"
       />
       <Header />
@@ -21,15 +21,17 @@ export default function Historia() {
         <div className="mt-8 space-y-5 text-marrom leading-relaxed">
           <p>
             A Caro Vargas nasceu do encontro entre as mãos, a argila e o tempo.
-            Cada peça é moldada no torno, uma de cada vez, sem pressa. O cuidado
-            no processo é o que dá significado ao objeto final.
+            Peças de cerâmica feitas à mão, uma a uma, com muito carinho e
+            dedicação. O cuidado no processo é o que dá significado ao objeto
+            final.
           </p>
           <p>
             Trabalhamos com cerâmica pra casa e peças personalizadas, sempre no
             ritmo do barro: cada uma leva o tempo que precisa pra secar, ser
-            esmaltada e queimada. Por isso nenhuma sai igual à outra. As
-            pequenas variações de forma, textura e tom não são defeito. São a
-            marca de que uma pessoa fez aquela peça com as próprias mãos.
+            esmaltada e queimada. Por isso pode carregar pequenas variações de
+            forma, tamanho e cor, pois são artesanais. Essas variações não são
+            defeito. São a marca de que uma pessoa fez aquela peça com as
+            próprias mãos.
           </p>
           <p>
             Gostamos de pensar nessas peças fazendo parte do dia a dia de

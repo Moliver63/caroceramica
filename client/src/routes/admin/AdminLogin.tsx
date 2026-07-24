@@ -13,7 +13,13 @@ export default function AdminLogin() {
       await utils.admin.sessaoAtual.invalidate();
       navegar("/admin/produtos");
     },
-    onError: (e) => setErro(e.message),
+    onError: (e) => {
+      // Proteção extra: se por algum motivo a mensagem parecer JSON
+      // técnico (começa com [ ou {), nunca mostra isso pro usuário —
+      // troca por uma mensagem genérica e segura.
+      const pareceTecnica = /^[[{]/.test(e.message.trim());
+      setErro(pareceTecnica ? "Não foi possível entrar. Tente novamente." : e.message);
+    },
   });
 
   return (
@@ -35,6 +41,12 @@ export default function AdminLogin() {
             onSubmit={(e) => {
               e.preventDefault();
               setErro(null);
+
+              if (!senha.trim()) {
+                setErro("Digite sua senha pra entrar.");
+                return;
+              }
+
               login.mutate({ senha });
             }}
           >
@@ -48,6 +60,7 @@ export default function AdminLogin() {
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="••••••••"
                 autoFocus
+                required
                 className={campoBase}
               />
             </div>
